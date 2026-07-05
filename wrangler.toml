@@ -1,0 +1,14 @@
+# ============================================================
+#  Cloudflare Pages config — binds D1 to your Functions.
+#  After you create the D1 database (see SETUP), paste its
+#  database_id below. The binding name MUST be "DB" (the code
+#  reads env.DB).
+# ============================================================
+name = "tekathon"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tekken-api-db"
+database_id = "071e9cb1-7c05-429d-b5e5-1a0f2029c702"

@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics - Tekathon</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-dark: #0d1117;
+    --bg-darker: #010409;
+    --surface: #161b22;
+    --surface-hover: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #7d8590;
+    --text-dimmer: #6e7681;
+    --accent: #8b5cf6;
+    --accent-light: #a78bfa;
+    --accent-dim: rgba(139, 92, 246, 0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .topbar {
+    background: var(--bg-darker);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .topbar-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: white;
+  }
+
+  .brand-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .brand-text .accent { color: var(--accent); }
+
+  .topnav {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .topnav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .topnav a:hover, .topnav a.active {
+    color: var(--text);
+    background: var(--accent-dim);
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  .page-header {
+    margin-bottom: 48px;
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+
+  .page-header p {
+    color: var(--text-dim);
+    font-size: 1.1rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  .card-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .badge {
+    background: var(--accent-dim);
+    color: var(--accent);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .stat-card {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .stat-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .stat-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .chart-container {
+    position: relative;
+    height: 350px;
+  }
+
+  .tier-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .tier {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .tier-label {
+    width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.5rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .tier-label.s { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+  .tier-label.a { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+  .tier-label.b { background: linear-gradient(135deg, #10b981, #34d399); }
+  .tier-label.c { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+  .tier-label.d { background: linear-gradient(135deg, #6b7280, #9ca3af); }
+
+  .tier-chars {
+    flex: 1;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .char-chip {
+    background: var(--surface);
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+
+  .char-chip:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .loading {
+    text-align: center;
+    padding: 60px;
+    color: var(--text-dim);
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 1024px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    .topnav { display: none; }
+    .tier { flex-direction: column; }
+    .tier-label { width: 100%; padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-content">
+    <a href="./index.html" class="brand">
+      <div class="brand-icon">T</div>
+      <div class="brand-text">Teka<span class="accent">thon</span></div>
+    </a>
+    <nav class="topnav">
+      <a href="./index.html">Home</a>
+      <a href="./search.html">Search</a>
+      <a href="./leaderboard.html">Leaderboards</a>
+      <a href="./analytics.html" class="active">Analytics</a>
+      <a href="./dashboard.html">Dashboard</a>
+    </nav>
+  </div>
+</div>
+
+<div class="container">
+  <div class="page-header">
+    <h1>Meta Analytics</h1>
+    <p>Live insights into TEKKEN 8 metagame and character performance</p>
+  </div>
+
+  <!-- Overview Stats -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Overview Statistics</h2>
+    </div>
+    <div class="stats-grid" id="overviewStats">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading statistics...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="grid">
+    <!-- Most Played Characters -->
+    <div class="card" style="margin: 0;">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Most Played Characters</h3>
+          <p class="card-subtitle">Based on recent matches</p>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="playRateChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Highest Win Rates -->
+    <div class="card" style="margin: 0;">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Highest Win Rates</h3>
+          <p class="card-subtitle">Top performing characters</p>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="winRateChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rank Distribution -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">Rank Distribution</h3>
+        <p class="card-subtitle">Player distribution across ranks</p>
+      </div>
+    </div>
+    <div class="chart-container">
+      <canvas id="rankChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Character Tier List -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="card-title">Character Tier List</h3>
+        <p class="card-subtitle">Based on win rates and pick rates</p>
+      </div>
+      <span class="badge">Live Data</span>
+    </div>
+    <div class="tier-list" id="tierList">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Calculating tiers...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Load all analytics data
+loadOverviewStats();
+loadMostPlayed();
+loadHighestWinRate();
+loadRankDistribution();
+loadTierList();
+
+// Load overview stats
+async function loadOverviewStats() {
+  try {
+    const res = await fetch('/api/sitestats');
+    const data = await res.json();
+    
+    if (data && data.totalPlayers !== undefined) {
+      document.getElementById('overviewStats').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-value">${formatNumber(data.totalPlayers || 0)}</div>
+          <div class="stat-label">Total Players</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${formatNumber(data.totalMatches || 0)}</div>
+          <div class="stat-label">Matches Tracked</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${data.mostPlayedCharacter || 'N/A'}</div>
+          <div class="stat-label">Most Played</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${data.averageRank || 'N/A'}</div>
+          <div class="stat-label">Avg Rank</div>
+        </div>
+      `;
+    }
+  } catch (e) {
+    console.error('Failed to load overview:', e);
+    document.getElementById('overviewStats').innerHTML = '<p style="color: var(--text-dim);">Failed to load statistics</p>';
+  }
+}
+
+// Load most played characters
+async function loadMostPlayed() {
+  try {
+    const res = await fetch('/api/analytics/most-played');
+    const data = await res.json();
+    
+    if (data.success && data.data) {
+      const chars = data.data.slice(0, 10);
+      createBarChart('playRateChart', chars, 'matches', '#8b5cf6', 'Matches Played');
+    }
+  } catch (e) {
+    console.error('Failed to load most played:', e);
+  }
+}
+
+// Load highest win rates
+async function loadHighestWinRate() {
+  try {
+    const res = await fetch('/api/analytics/highest-winrate');
+    const data = await res.json();
+    
+    if (data.success && data.data) {
+      const chars = data.data.slice(0, 10);
+      createBarChart('winRateChart', chars, 'winRate', '#10b981', 'Win Rate %');
+    }
+  } catch (e) {
+    console.error('Failed to load win rates:', e);
+  }
+}
+
+// Load rank distribution
+async function loadRankDistribution() {
+  try {
+    const res = await fetch('/api/analytics/rank-distribution');
+    const data = await res.json();
+    
+    if (data.success && data.data) {
+      createRankChart(data.data);
+    }
+  } catch (e) {
+    console.error('Failed to load rank distribution:', e);
+  }
+}
+
+// Load tier list
+async function loadTierList() {
+  try {
+    const res = await fetch('/api/analytics/highest-winrate');
+    const data = await res.json();
+    
+    if (data.success && data.data) {
+      createTierList(data.data);
+    }
+  } catch (e) {
+    console.error('Failed to load tier list:', e);
+    document.getElementById('tierList').innerHTML = '<p style="color: var(--text-dim);">Failed to load tier list</p>';
+  }
+}
+
+// Create bar chart
+function createBarChart(canvasId, data, valueKey, color, label) {
+  const ctx = document.getElementById(canvasId);
+  
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.map(d => d.character || d.name),
+      datasets: [{
+        label: label,
+        data: data.map(d => d[valueKey] || d.count || 0),
+        backgroundColor: color,
+        borderRadius: 8,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#161b22',
+          titleColor: '#e6edf3',
+          bodyColor: '#7d8590',
+          borderColor: '#30363d',
+          borderWidth: 1,
+          padding: 12,
+          cornerRadius: 8
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#7d8590', font: { size: 11 } }
+        },
+        y: {
+          grid: { color: '#30363d' },
+          ticks: { color: '#7d8590' }
+        }
+      }
+    }
+  });
+}
+
+// Create rank distribution chart
+function createRankChart(data) {
+  const ctx = document.getElementById('rankChart');
+  
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.rank || d.name),
+      datasets: [{
+        label: 'Players',
+        data: data.map(d => d.count || d.players || 0),
+        borderColor: '#8b5cf6',
+        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2,
+        pointRadius: 4,
+        pointBackgroundColor: '#8b5cf6'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#161b22',
+          titleColor: '#e6edf3',
+          bodyColor: '#7d8590',
+          borderColor: '#30363d',
+          borderWidth: 1,
+          padding: 12,
+          cornerRadius: 8
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#7d8590', font: { size: 11 } }
+        },
+        y: {
+          grid: { color: '#30363d' },
+          ticks: { color: '#7d8590' }
+        }
+      }
+    }
+  });
+}
+
+// Create tier list
+function createTierList(characters) {
+  // Sort by win rate
+  const sorted = [...characters].sort((a, b) => (b.winRate || 0) - (a.winRate || 0));
+  
+  // Divide into tiers
+  const tiers = {
+    S: sorted.slice(0, Math.ceil(sorted.length * 0.15)),
+    A: sorted.slice(Math.ceil(sorted.length * 0.15), Math.ceil(sorted.length * 0.35)),
+    B: sorted.slice(Math.ceil(sorted.length * 0.35), Math.ceil(sorted.length * 0.60)),
+    C: sorted.slice(Math.ceil(sorted.length * 0.60), Math.ceil(sorted.length * 0.85)),
+    D: sorted.slice(Math.ceil(sorted.length * 0.85))
+  };
+  
+  const html = Object.entries(tiers).map(([tier, chars]) => `
+    <div class="tier">
+      <div class="tier-label ${tier.toLowerCase()}">${tier}</div>
+      <div class="tier-chars">
+        ${chars.map(c => `<span class="char-chip">${esc(c.character || c.name)} (${(c.winRate || 0).toFixed(1)}%)</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+  
+  document.getElementById('tierList').innerHTML = html;
+}
+
+// Helper functions
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function formatNumber(num) {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
+}
+</script>
+
+</body>
+</html>

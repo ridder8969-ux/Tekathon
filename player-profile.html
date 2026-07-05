@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Player Profile - TekkenStats</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #0a0e13;
+    color: #e0e6ed;
+    line-height: 1.6;
+  }
+
+  /* Header */
+  .header {
+    background: #151a21;
+    border-bottom: 1px solid #1e2731;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+  }
+
+  .logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    text-decoration: none;
+    padding: 18px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo-icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+  }
+
+  .logo-text { color: #dc2626; }
+
+  /* Container */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  /* Player Header */
+  .player-header {
+    background: linear-gradient(135deg, #151a21, #1a1f28);
+    border: 1px solid #1e2731;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .player-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(220, 38, 38, 0.1), transparent);
+    pointer-events: none;
+  }
+
+  .player-main {
+    position: relative;
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+  }
+
+  .player-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 3rem;
+    flex-shrink: 0;
+    box-shadow: 0 10px 40px rgba(220, 38, 38, 0.3);
+  }
+
+  .player-info {
+    flex: 1;
+  }
+
+  .player-name {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+
+  .player-meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .meta-label {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin-bottom: 4px;
+  }
+
+  .meta-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .meta-value.rank {
+    color: #dc2626;
+  }
+
+  .player-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .stat-box {
+    background: #1a1f28;
+    border: 1px solid #1e2731;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #dc2626;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    color: #9ca3af;
+  }
+
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 80px 20px;
+  }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #1e2731;
+    border-top-color: #dc2626;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 24px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Error */
+  .error-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: #151a21;
+    border: 1px solid #1e2731;
+    border-radius: 16px;
+  }
+
+  .error-state h2 {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+
+  .error-state p {
+    color: #9ca3af;
+    margin-bottom: 24px;
+  }
+
+  .error-btn {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .error-btn:hover {
+    background: #b91c1c;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid #1e2731;
+    margin-bottom: 32px;
+    overflow-x: auto;
+  }
+
+  .tab {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    padding: 16px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+  }
+
+  .tab:hover {
+    color: #fff;
+  }
+
+  .tab.active {
+    color: #fff;
+    border-bottom-color: #dc2626;
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  /* Match History */
+  .match-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .match-card {
+    background: #151a21;
+    border: 1px solid #1e2731;
+    border-radius: 12px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
+    align-items: center;
+    transition: all 0.2s;
+  }
+
+  .match-card:hover {
+    background: #1a1f28;
+  }
+
+  .match-result {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.2rem;
+  }
+
+  .match-result.win {
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: #fff;
+  }
+
+  .match-result.loss {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    color: #fff;
+  }
+
+  .match-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .match-opponent {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .match-chars {
+    display: flex;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #9ca3af;
+  }
+
+  .match-time {
+    font-size: 0.85rem;
+    color: #6b7280;
+    text-align: right;
+  }
+
+  /* Charts */
+  .chart-section {
+    background: #151a21;
+    border: 1px solid #1e2731;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .chart-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .chart-canvas {
+    position: relative;
+    height: 300px;
+  }
+
+  @media (max-width: 768px) {
+    .player-main { flex-direction: column; align-items: center; text-align: center; }
+    .player-meta { justify-content: center; }
+    .match-card { grid-template-columns: auto 1fr; }
+    .match-time { grid-column: 1 / -1; text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-content">
+    <a href="./index.html" class="logo">
+      <div class="logo-icon">T</div>
+      <span>tekken<span class="logo-text">stats</span>.gg</span>
+    </a>
+  </div>
+</header>
+
+<!-- Loading State -->
+<div class="container" id="loadingState">
+  <div class="loading">
+    <div class="spinner"></div>
+    <p style="color: #9ca3af; font-size: 1.1rem;">Loading player data...</p>
+  </div>
+</div>
+
+<!-- Error State -->
+<div class="container" id="errorState" style="display:none;">
+  <div class="error-state">
+    <h2>Player Not Found</h2>
+    <p>We couldn't find a player with that ID. Double-check the Tekken ID and try again.</p>
+    <a href="./search.html" class="error-btn">Back to Search</a>
+  </div>
+</div>
+
+<!-- Player Content -->
+<div class="container" id="playerContent" style="display:none;">
+  <!-- Player Header -->
+  <div class="player-header">
+    <div class="player-main">
+      <div class="player-avatar" id="playerAvatar">?</div>
+      <div class="player-info">
+        <h1 class="player-name" id="playerName">—</h1>
+        <div class="player-meta">
+          <div class="meta-item">
+            <span class="meta-label">Rank</span>
+            <span class="meta-value rank" id="playerRank">—</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Prowess</span>
+            <span class="meta-value" id="playerProwess">—</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Region</span>
+            <span class="meta-value" id="playerRegion">—</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Platform</span>
+            <span class="meta-value" id="playerPlatform">—</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Main</span>
+            <span class="meta-value" id="playerMain">—</span>
+          </div>
+        </div>
+        <div class="player-stats">
+          <div class="stat-box">
+            <div class="stat-value" id="playerWins">—</div>
+            <div class="stat-label">Wins</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="playerLosses">—</div>
+            <div class="stat-label">Losses</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="playerWinRate">—%</div>
+            <div class="stat-label">Win Rate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(0)">Match History</button>
+    <button class="tab" onclick="switchTab(1)">Statistics</button>
+    <button class="tab" onclick="switchTab(2)">Character Breakdown</button>
+  </div>
+
+  <!-- Tab: Match History -->
+  <div class="tab-content active" id="tab0">
+    <div class="match-list" id="matchList">
+      <p style="text-align:center;color:#9ca3af;padding:40px;">No recent matches found</p>
+    </div>
+  </div>
+
+  <!-- Tab: Statistics -->
+  <div class="tab-content" id="tab1">
+    <div class="chart-section">
+      <h3 class="chart-title">Win Rate by Opponent Character</h3>
+      <div class="chart-canvas">
+        <canvas id="opponentChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Character Breakdown -->
+  <div class="tab-content" id="tab2">
+    <div class="chart-section">
+      <h3 class="chart-title">Characters Used</h3>
+      <div class="chart-canvas">
+        <canvas id="characterChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Get player ID from URL
+const params = new URLSearchParams(window.location.search);
+const playerId = params.get('id');
+
+if (!playerId) {
+  showError();
+} else {
+  loadPlayer(playerId);
+}
+
+// Load player data
+async function loadPlayer(id) {
+  try {
+    const res = await fetch(`/api/player?id=${encodeURIComponent(id)}`);
+    const data = await res.json();
+    
+    if (!data || data.error) {
+      showError();
+      return;
+    }
+    
+    displayPlayer(data);
+    loadMatches(id);
+  } catch (e) {
+    console.error('Failed to load player:', e);
+    showError();
+  }
+}
+
+// Display player data
+function displayPlayer(data) {
+  const profile = data.profile || {};
+  const stats = data.stats || {};
+  
+  // Update header
+  document.getElementById('playerName').textContent = profile.name || profile.player_name || 'Unknown';
+  document.getElementById('playerAvatar').textContent = (profile.name || 'U').charAt(0).toUpperCase();
+  document.getElementById('playerRank').textContent = profile.rank || 'Unknown';
+  document.getElementById('playerProwess').textContent = formatNumber(profile.prowess || profile.rating || 0);
+  document.getElementById('playerRegion').textContent = profile.region || 'Unknown';
+  document.getElementById('playerPlatform').textContent = profile.platform || 'Unknown';
+  document.getElementById('playerMain').textContent = profile.main_character || 'Unknown';
+  
+  // Update stats
+  document.getElementById('playerWins').textContent = stats.wins || stats.totalWins || 0;
+  document.getElementById('playerLosses').textContent = stats.losses || stats.totalLosses || 0;
+  document.getElementById('playerWinRate').textContent = (stats.winRate || 0).toFixed(1);
+  
+  // Show content
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('playerContent').style.display = 'block';
+}
+
+// Load matches
+async function loadMatches(id) {
+  try {
+    const res = await fetch(`/api/player-stats?id=${encodeURIComponent(id)}`);
+    const data = await res.json();
+    
+    if (data.success && data.data && data.data.matches) {
+      displayMatches(data.data.matches);
+    }
+  } catch (e) {
+    console.error('Failed to load matches:', e);
+  }
+}
+
+// Display matches
+function displayMatches(matches) {
+  if (!matches || matches.length === 0) return;
+  
+  const list = document.getElementById('matchList');
+  list.innerHTML = matches.slice(0, 20).map(match => {
+    const isWin = match.result === 'win' || match.result === 'W';
+    return `
+      <div class="match-card">
+        <div class="match-result ${isWin ? 'win' : 'loss'}">
+          ${isWin ? 'W' : 'L'}
+        </div>
+        <div class="match-details">
+          <div class="match-opponent">vs ${esc(match.opponent || 'Unknown')}</div>
+          <div class="match-chars">
+            <span>${esc(match.character || '?')}</span> vs <span>${esc(match.opponentCharacter || match.opponent_character || '?')}</span>
+          </div>
+        </div>
+        <div class="match-time">${formatMatchTime(match.date)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Switch tabs
+function switchTab(index) {
+  document.querySelectorAll('.tab').forEach((tab, i) => {
+    tab.classList.toggle('active', i === index);
+  });
+  document.querySelectorAll('.tab-content').forEach((content, i) => {
+    content.classList.toggle('active', i === index);
+  });
+}
+
+// Show error
+function showError() {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorState').style.display = 'block';
+}
+
+// Helper functions
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function formatNumber(num) {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
+}
+
+function formatMatchTime(timestamp) {
+  if (!timestamp) return 'Unknown';
+  const date = new Date(timestamp * 1000);
+  const diff = Date.now() - date.getTime();
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 30) return `${days}d ago`;
+  return date.toLocaleDateString();
+}
+</script>
+
+</body>
+</html>

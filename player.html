@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Player Profile - Tekathon</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-dark: #0d1117;
+    --bg-darker: #010409;
+    --surface: #161b22;
+    --surface-hover: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #7d8590;
+    --text-dimmer: #6e7681;
+    --accent: #8b5cf6;
+    --accent-light: #a78bfa;
+    --accent-dim: rgba(139, 92, 246, 0.1);
+    --success: #3fb950;
+    --danger: #f85149;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .topbar {
+    background: var(--bg-darker);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+  }
+
+  .topbar-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: white;
+  }
+
+  .brand-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .brand-text .accent { color: var(--accent); }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  .player-header {
+    background: linear-gradient(135deg, var(--surface), var(--surface-hover));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .player-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100%;
+    background: radial-gradient(circle at top right, var(--accent-dim), transparent);
+    pointer-events: none;
+  }
+
+  .player-main {
+    position: relative;
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+  }
+
+  .player-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 3rem;
+    flex-shrink: 0;
+    box-shadow: 0 10px 40px rgba(139, 92, 246, 0.3);
+  }
+
+  .player-info {
+    flex: 1;
+  }
+
+  .player-name {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .player-meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .meta-label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .meta-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .meta-value.rank {
+    color: var(--accent);
+  }
+
+  .player-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .stat-box {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .stat-box:hover {
+    border-color: var(--accent);
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 80px 20px;
+  }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 24px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .error-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+
+  .error-state h2 {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+
+  .error-state p {
+    color: var(--text-dim);
+    margin-bottom: 24px;
+  }
+
+  .error-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .error-btn:hover {
+    background: var(--accent-light);
+  }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  .tab {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    padding: 16px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+  }
+
+  .tab:hover {
+    color: var(--text);
+  }
+
+  .tab.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  .match-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .match-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
+    align-items: center;
+    transition: all 0.2s;
+  }
+
+  .match-card:hover {
+    border-color: var(--accent);
+  }
+
+  .match-result {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.2rem;
+  }
+
+  .match-result.win {
+    background: linear-gradient(135deg, var(--success), #4ade80);
+    color: white;
+  }
+
+  .match-result.loss {
+    background: linear-gradient(135deg, var(--danger), #ff6b6b);
+    color: white;
+  }
+
+  .match-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .match-opponent {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .match-chars {
+    display: flex;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+
+  .match-time {
+    font-size: 0.85rem;
+    color: var(--text-dimmer);
+    text-align: right;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 768px) {
+    .player-main { flex-direction: column; align-items: center; text-align: center; }
+    .player-meta { justify-content: center; }
+    .match-card { grid-template-columns: auto 1fr; }
+    .match-time { grid-column: 1 / -1; text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-content">
+    <a href="./index.html" class="brand">
+      <div class="brand-icon">T</div>
+      <div class="brand-text">Teka<span class="accent">thon</span></div>
+    </a>
+  </div>
+</div>
+
+<div class="container" id="loadingState">
+  <div class="loading">
+    <div class="spinner"></div>
+    <p style="color: var(--text-dim); font-size: 1.1rem;">Loading player data...</p>
+  </div>
+</div>
+
+<div class="container" id="errorState" style="display:none;">
+  <div class="error-state">
+    <h2>Player Not Found</h2>
+    <p>We couldn't find a player with that ID. Double-check the Tekken ID and try again.</p>
+    <a href="./search.html" class="error-btn">Back to Search</a>
+  </div>
+</div>
+
+<div class="container" id="playerContent" style="display:none;">
+  <div class="player-header">
+    <div class="player-main">
+      <div class="player-avatar" id="playerAvatar">?</div>
+      <div class="player-info">
+        <h1 class="player-name" id="playerName">—</h1>
+        <div class="player-meta">
+          <div class="meta-item">
+            <span class="meta-label">Rank</span>
+            <span class="meta-value rank" id="playerRank">—</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Prowess</span>
+            <span class="meta-value" id="playerProwess">—</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Region</span>
+            <span class="meta-value" id="playerRegion">—</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Platform</span>
+            <span class="meta-value" id="playerPlatform">—</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Main</span>
+            <span class="meta-value" id="playerMain">—</span>
+          </div>
+        </div>
+        <div class="player-stats">
+          <div class="stat-box">
+            <div class="stat-value" id="playerWins">—</div>
+            <div class="stat-label">Wins</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="playerLosses">—</div>
+            <div class="stat-label">Losses</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="playerWinRate">—%</div>
+            <div class="stat-label">Win Rate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(0)">Match History</button>
+    <button class="tab" onclick="switchTab(1)">Statistics</button>
+  </div>
+
+  <div class="tab-content active" id="tab0">
+    <div class="match-list" id="matchList">
+      <div class="empty-state">No recent matches found</div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab1">
+    <div class="empty-state">Statistics coming soon</div>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const playerId = params.get('id');
+
+if (!playerId) {
+  showError();
+} else {
+  loadPlayer(playerId);
+}
+
+async function loadPlayer(id) {
+  try {
+    const res = await fetch(`/api/player?id=${encodeURIComponent(id)}`);
+    const data = await res.json();
+    
+    if (!data || data.error) {
+      showError();
+      return;
+    }
+    
+    displayPlayer(data);
+    loadMatches(id);
+  } catch (e) {
+    console.error('Failed to load player:', e);
+    showError();
+  }
+}
+
+function displayPlayer(data) {
+  const profile = data.profile || {};
+  const stats = data.stats || {};
+  
+  document.getElementById('playerName').textContent = profile.name || profile.player_name || 'Unknown';
+  document.getElementById('playerAvatar').textContent = (profile.name || 'U').charAt(0).toUpperCase();
+  document.getElementById('playerRank').textContent = profile.rank || 'Unknown';
+  document.getElementById('playerProwess').textContent = formatNumber(profile.prowess || profile.rating || 0);
+  document.getElementById('playerRegion').textContent = profile.region || 'Unknown';
+  document.getElementById('playerPlatform').textContent = profile.platform || 'Unknown';
+  document.getElementById('playerMain').textContent = profile.main_character || 'Unknown';
+  
+  document.getElementById('playerWins').textContent = stats.wins || stats.totalWins || 0;
+  document.getElementById('playerLosses').textContent = stats.losses || stats.totalLosses || 0;
+  document.getElementById('playerWinRate').textContent = (stats.winRate || 0).toFixed(1);
+  
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('playerContent').style.display = 'block';
+}
+
+async function loadMatches(id) {
+  try {
+    const res = await fetch(`/api/player?id=${encodeURIComponent(id)}`);
+    const data = await res.json();
+    
+    if (data.battles && data.battles.length > 0) {
+      displayMatches(data.battles);
+    } else if (data.stats && data.stats.battles) {
+      displayMatches(data.stats.battles);
+    }
+  } catch (e) {
+    console.error('Failed to load matches:', e);
+  }
+}
+
+function displayMatches(matches) {
+  if (!matches || matches.length === 0) return;
+  
+  const list = document.getElementById('matchList');
+  list.innerHTML = matches.slice(0, 20).map(match => {
+    const isWin = match.result === 'win' || match.result === 'W' || match.winner === true;
+    return `
+      <div class="match-card">
+        <div class="match-result ${isWin ? 'win' : 'loss'}">
+          ${isWin ? 'W' : 'L'}
+        </div>
+        <div class="match-details">
+          <div class="match-opponent">vs ${esc(match.opponent || match.opponent_name || 'Unknown')}</div>
+          <div class="match-chars">
+            <span>${esc(match.character || match.player_character || '?')}</span> vs 
+            <span>${esc(match.opponentCharacter || match.opponent_character || '?')}</span>
+          </div>
+        </div>
+        <div class="match-time">${formatMatchTime(match.date || match.timestamp || match.played_at)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function switchTab(index) {
+  document.querySelectorAll('.tab').forEach((tab, i) => {
+    tab.classList.toggle('active', i === index);
+  });
+  document.querySelectorAll('.tab-content').forEach((content, i) => {
+    content.classList.toggle('active', i === index);
+  });
+}
+
+function showError() {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorState').style.display = 'block';
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function formatNumber(num) {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
+}
+
+function formatMatchTime(timestamp) {
+  if (!timestamp) return 'Unknown';
+  const date = new Date(timestamp * 1000);
+  const diff = Date.now() - date.getTime();
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 30) return `${days}d ago`;
+  return date.toLocaleDateString();
+}
+</script>
+
+</body>
+</html>

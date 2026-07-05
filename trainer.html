@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trainer — Tekathon</title>
+<link rel="stylesheet" href="./style.css">
+<style>
+  .tr-head{display:flex;align-items:center;gap:16px;margin:8px 0 8px;flex-wrap:wrap}
+  .tr-head img{width:60px;height:60px;border-radius:50%;border:1px solid var(--line);flex:none}
+  .tr-head .nm{font-size:1.8rem;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .tr-head .sub{color:var(--ink-dim);font-size:.88rem;margin-top:3px}
+  .tr-switch{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .tr-switch label{font-size:.78rem;color:var(--ink-faint)}
+  .tr-switch select{background:var(--panel);border:1px solid var(--line);color:var(--ink);font-weight:600;font-size:.9rem;padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer}
+
+  .signin-note{background:var(--accent-soft);border:1px solid rgba(77,159,255,0.25);border-radius:var(--radius);padding:14px 16px;margin-bottom:18px;font-size:.9rem;color:var(--ink-dim)}
+  .signin-note a{color:var(--accent);text-decoration:none;font-weight:600}
+
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0;border-bottom:1px solid var(--line);padding-bottom:0}
+  .tab{font-size:.86rem;font-weight:600;color:var(--ink-dim);padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab:hover{color:var(--ink)}
+  .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+
+  .panel{display:none}
+  .panel.on{display:block}
+  .panel-intro{color:var(--ink-dim);font-size:.92rem;margin-bottom:16px;max-width:680px}
+  .panel-intro strong{color:var(--ink)}
+
+  .move-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+  .move{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 15px}
+  .move .mc{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:.95rem;color:var(--ink)}
+  .move .mn{color:var(--ink-faint);font-size:.74rem;margin-top:1px}
+  .move .mstats{display:flex;gap:10px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:.72rem}
+  .move .mstats .st{color:var(--ink-dim)}
+  .move .mstats .st b{color:var(--ink);font-weight:600}
+  .move .mstats .blk.plus{color:var(--good)} .move .mstats .blk.minus{color:var(--warn)} .move .mstats .blk.bigminus{color:var(--bad)}
+  .move .mnote{color:var(--ink-faint);font-size:.72rem;margin-top:7px;line-height:1.4}
+
+  .pun-list{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .pun{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:var(--radius-sm);padding:12px 14px}
+  .pun .pw{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);font-weight:600}
+  .pun .pc{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:1rem;margin-top:3px}
+  .pun .pmeta{color:var(--ink-faint);font-size:.72rem;margin-top:4px}
+
+  .state{text-align:center;margin:40px auto;color:var(--ink-dim)}
+  .empty{color:var(--ink-faint);font-size:.88rem;padding:20px;text-align:center}
+  .deeplink{background:var(--accent-soft);border:1px solid rgba(77,159,255,.25);border-radius:var(--radius);padding:14px 16px;margin-top:14px;font-size:.88rem}
+  .deeplink a{color:var(--accent);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="logo" href="./index.html"><span class="dot">T</span>Tekathon</a>
+  <a class="navlink active" href="./trainer.html">Trainer</a>
+  <a class="navlink" href="./framedata.html">Frame Data</a>
+  <a class="navlink" href="./movesearch.html">Move Search</a>
+  <a class="navlink" href="./matchup.html">Matchups</a>
+  <a class="navlink" href="./player.html">Player Lookup</a>
+  <a class="navlink" href="./community.html">Community</a>
+  <a class="navlink" href="./tournaments.html">Tournaments</a>
+  <a class="navlink" href="./rank.html">Rank Guide</a>
+  <a class="navlink" href="./dashboard.html">Dashboard</a>
+  <span class="spacer"></span>
+  <span id="navAuth"></span>
+</nav>
+
+<div class="wrap">
+  <div class="eyebrow">Your Personal Trainer</div>
+  <div class="tr-head">
+    <img id="trImg" src="./assets.js" alt="" style="display:none">
+    <div>
+      <div class="nm" id="trName">Trainer</div>
+      <div class="sub" id="trSub">Set your main to personalize this page</div>
+    </div>
+    <div class="tr-switch">
+      <label>Character</label>
+      <select id="charSwitch"></select>
+    </div>
+  </div>
+
+  <div id="signinNote"></div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab on" data-t="punishers">Punishers</div>
+    <div class="tab" data-t="pokes">Pokes</div>
+    <div class="tab" data-t="launchers">Launchers</div>
+    <div class="tab" data-t="lows">Lows</div>
+    <div class="tab" data-t="safe_mids">Pressure</div>
+    <div class="tab" data-t="heat_engagers">Heat</div>
+    <div class="tab" data-t="homing">Homing</div>
+    <div class="tab" data-t="power_crushes">Power Crush</div>
+    <div class="tab" data-t="throws">Throws</div>
+    <div class="tab" data-t="defense">Defense</div>
+  </div>
+
+  <div class="state" id="loading"><div class="spinner"></div>Loading your playbook…</div>
+  <div id="errSlot"></div>
+  <div id="panels"></div>
+</div>
+
+<footer class="site">
+  <div class="fcols">
+    <div class="fbrand"><div class="flogo"><span class="dot">L</span>Tekathon</div><p>Your personal Tekken 8 trainer — built around your main, from real frame data.</p></div>
+    <div class="fcol"><h4>Tools</h4><a href="./trainer.html">Trainer</a><a href="./framedata.html">Frame Data</a><a href="./matchup.html">Matchups</a><a href="./rank.html">Rank Guide</a></div>
+    <div class="fcol"><h4>Sources</h4><a href="https://tekkendocs.com" target="_blank" rel="noopener">TekkenDocs</a><a href="https://rbnorway.org" target="_blank" rel="noopener">rbnorway.org</a></div>
+  </div>
+  <div class="fbar">Frame data from tekkendocs.com &amp; rbnorway.org · Verify in-game. · Built for RIDD &amp; crew.</div>
+</footer>
+
+<script src="./assets.js"></script>
+<script src="./tek-auth.js"></script>
+<script>
+const ROSTER=[["alisa","Alisa"],["anna","Anna"],["armor-king","Armor King"],["asuka","Asuka"],["azucena","Azucena"],["bob","Bob"],["bryan","Bryan"],["claudio","Claudio"],["clive","Clive"],["devil-jin","Devil Jin"],["dragunov","Dragunov"],["eddy","Eddy"],["fahkumram","Fahkumram"],["feng","Feng"],["heihachi","Heihachi"],["hwoarang","Hwoarang"],["jack-8","Jack-8"],["jin","Jin"],["jun","Jun"],["kazuya","Kazuya"],["king","King"],["kuma","Kuma"],["kunimitsu","Kunimitsu"],["lars","Lars"],["law","Law"],["lee","Lee"],["leo","Leo"],["leroy","Leroy"],["lidia","Lidia"],["lili","Lili"],["miary","Miary Zo"],["nina","Nina"],["panda","Panda"],["paul","Paul"],["raven","Raven"],["reina","Reina"],["shaheen","Shaheen"],["steve","Steve"],["victor","Victor"],["xiaoyu","Xiaoyu"],["yoshimitsu","Yoshimitsu"],["zafina","Zafina"]];
+const DEEP_LARS = ["bryan","dragunov","jin","devil-jin","king","armor-king","eddy","hwoarang"];
+
+const trImg=document.getElementById("trImg"),trName=document.getElementById("trName"),trSub=document.getElementById("trSub"),charSwitch=document.getElementById("charSwitch"),signinNote=document.getElementById("signinNote"),loading=document.getElementById("loading"),errSlot=document.getElementById("errSlot"),panels=document.getElementById("panels"),navAuth=document.getElementById("navAuth"),tabs=document.getElementById("tabs");
+ROSTER.forEach(([s,n])=>charSwitch.appendChild(new Option(n,s)));
+function esc(s){if(s==null)return "";return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function cap(s){const f=ROSTER.find(r=>r[0]===s);return f?f[1]:s;}
+function blkClass(b){const n=parseInt(String(b).match(/-?\d+/)?String(b).match(/-?\d+/)[0]:"",10);if(isNaN(n))return "";if(n>=0)return "plus";if(n<=-15)return "bigminus";if(n<=-10)return "minus";return "";}
+
+let playbook=null, activeTab="punishers", currentChar="lars";
+
+(async function(){
+  // try to detect signed-in user's main
+  let main="lars", signedIn=false;
+  try{
+    const clerk=await TEK.initClerk();
+    if(TEK.isSignedIn()){
+      signedIn=true;
+      const ub=document.createElement("div"); navAuth.appendChild(ub); clerk.mountUserButton(ub,{afterSignOutUrl:"/dashboard.html"});
+      const {ok,data}=await TEK.api("/api/me/profile");
+      if(ok && data && data.profile && data.profile.main_character) main=data.profile.main_character;
+    }
+  }catch(e){}
+
+  if(!signedIn){
+    signinNote.innerHTML='<div class="signin-note">👋 This trainer personalizes to <strong>your main</strong>. <a href="./dashboard.html">Sign in</a> and set your character, or just browse any character below.</div>';
+  }
+
+  // URL override
+  const urlChar=new URLSearchParams(location.search).get("char");
+  if(urlChar) main=urlChar;
+
+  charSwitch.value = ROSTER.find(r=>r[0]===main) ? main : "lars";
+  loadChar(charSwitch.value, signedIn);
+})();
+
+charSwitch.addEventListener("change",()=>loadChar(charSwitch.value));
+tabs.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{activeTab=t.dataset.t;tabs.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t));renderPanel();}));
+
+async function loadChar(slug, signedIn){
+  currentChar=slug;
+  trName.textContent=cap(slug)+" Trainer";
+  trSub.textContent="Loading "+cap(slug)+"'s playbook…";
+  trImg.style.display="block"; trImg.src=TekAssets.charImg(slug);
+  trImg.onerror=function(){trImg.style.display="none";};
+  errSlot.innerHTML=""; panels.innerHTML=""; loading.style.display="block";
+  try{
+    const r=await fetch("/api/playbook?char="+encodeURIComponent(slug));
+    const d=await r.json(); loading.style.display="none";
+    if(!r.ok||d.error){ errSlot.innerHTML='<div class="empty">Couldn\'t load '+esc(cap(slug))+'\'s data. '+esc(d.error||"")+'</div>'; return; }
+    playbook=d.playbook;
+    trSub.textContent="Personalized playbook · computed from live frame data";
+    renderPanel();
+  }catch(e){ loading.style.display="none"; errSlot.innerHTML='<div class="empty">Couldn\'t reach the playbook service. (Deployed site only.)</div>'; }
+}
+
+function moveCard(m){
+  if(!m) return "";
+  return '<div class="move"><div class="mc">'+esc(m.command)+'</div>'+(m.name?'<div class="mn">'+esc(m.name)+'</div>':'')+
+    '<div class="mstats">'+
+      (m.startup?'<span class="st">i<b>'+esc(String(m.startup).replace(/^i/,''))+'</b></span>':'')+
+      (m.block?'<span class="st blk '+blkClass(m.block)+'">blk <b>'+esc(m.block)+'</b></span>':'')+
+      (m.hit?'<span class="st">hit <b>'+esc(m.hit)+'</b></span>':'')+
+    '</div>'+(m.notes?'<div class="mnote">'+esc(m.notes)+'</div>':'')+'</div>';
+}
+function grid(arr){ if(!arr||!arr.length) return '<div class="empty">Nothing notable here for this character.</div>'; return '<div class="move-grid">'+arr.map(moveCard).join("")+'</div>'; }
+
+function renderPanel(){
+  if(!playbook){ panels.innerHTML=""; return; }
+  const intros={
+    punishers:"<strong>The #1 way to climb.</strong> Block their unsafe move, then hit the matching punish. Memorize your i10 and i15 — those win the most games.",
+    pokes:"Fast, safe-ish moves to control space and keep your turn. Low commitment, high frequency.",
+    launchers:"Your big-reward starters. Land these on whiff or after a block punish for full combos.",
+    lows:"Mix in lows to open up blockers — but most are unsafe, so don't spam them.",
+    safe_mids:"Mids that stay safe (or plus) on block — your pressure tools that beat ducking.",
+    heat_engagers:"Moves that activate Heat. Learn which ones are safe and which give the best Heat pressure.",
+    homing:"These track sidesteps — your answer to opponents who step everything.",
+    power_crushes:"Absorb a hit and plow through. Use to beat predictable pressure (but they lose to lows & throws).",
+    throws:"Throws are free damage if they don't break. Mix them into your offense.",
+    defense:""
+  };
+  let h="";
+  if(activeTab==="defense"){
+    h='<div class="panel-intro"><strong>Defense wins ranked.</strong> The fundamentals below apply to every character:</div>';
+    h+='<div class="move-grid">'+
+      defenseCard("Block low more","If you\'re getting hit by lows, you\'re not crouch-blocking enough. Most lows are -12 or worse — block, then punish with your while-standing move.")+
+      defenseCard("Punish on block","When you block something unsafe, ALWAYS punish. Use the Punishers tab. Not punishing is free damage you\'re giving away.")+
+      defenseCard("Stop pressing","After you block, it\'s often NOT your turn. Pressing a button into their plus frames gets you counter-hit. Wait, block, then take your turn.")+
+      defenseCard("Sidestep & duck","Step jabs and linear strings; duck obvious highs. Use the Matchup Lab to see which of their moves are duckable/steppable.")+
+      defenseCard("Break throws","Watch the throw animation: 1 break = left hand forward, 2 break = right. 1+2 throws need 1+2. Practice in training.")+
+      defenseCard("Respect, then take turn","If they\'re plus and pressuring, block 1-2 hits, THEN contest. Patience beats mashing at every rank below the top.")+
+    '</div>';
+    // deep matchup link for Lars
+    if(currentChar==="lars"){
+      h+='<div class="deeplink">📖 You main Lars — there are <strong>8 deep matchup guides</strong> (Bryan, Dragunov, Jin, Devil Jin, King, Armor King, Eddy, Hwoarang) with specific threats and punishes. <a href="./matchup.html?me=lars&opp=bryan">Open the Matchup Lab →</a></div>';
+    } else {
+      h+='<div class="deeplink">🔍 Scout any opponent\'s unsafe moves, lows, and homing in the <a href="./matchup.html?me='+esc(currentChar)+'&opp=king">Matchup Lab →</a></div>';
+    }
+    panels.innerHTML=h; return;
+  }
+  if(activeTab==="punishers"){
+    const p=playbook.punishers||{};
+    h='<div class="panel-intro">'+intros.punishers+'</div><div class="pun-list">'+
+      punCard("i10","After −10",p.i10)+punCard("i12","After −12",p.i12)+punCard("i13","After −13",p.i13)+
+      punCard("i14","After −14",p.i14)+punCard("i15","Launch −15+",p.i15_launch)+punCard("WS","While rising",p.while_standing)+
+      '</div>';
+    panels.innerHTML=h; return;
+  }
+  h='<div class="panel-intro">'+(intros[activeTab]||"")+'</div>'+grid(playbook[activeTab]);
+  panels.innerHTML=h;
+}
+function punCard(w,label,m){
+  if(!m) return '<div class="pun"><div class="pw">'+w+'</div><div class="pc" style="color:var(--ink-faint)">—</div><div class="pmeta">'+label+'</div></div>';
+  return '<div class="pun"><div class="pw">'+w+' · '+label+'</div><div class="pc">'+esc(m.command)+'</div><div class="pmeta">'+(m.name?esc(m.name)+' · ':'')+esc(m.damage||"")+(m.hit?' · hit '+esc(m.hit):'')+'</div></div>';
+}
+function defenseCard(title,body){ return '<div class="move"><div class="mc" style="font-family:Inter,sans-serif;font-size:.95rem">'+esc(title)+'</div><div class="mnote" style="margin-top:6px;font-size:.82rem">'+esc(body)+'</div></div>'; }
+</script>
+</body>
+</html>
