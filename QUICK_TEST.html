@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tekathon API Test</title>
+<style>
+body { font-family: monospace; padding: 40px; background: #0d1117; color: #e6edf3; }
+h1 { color: #8b5cf6; }
+.endpoint { background: #161b22; border: 1px solid #30363d; padding: 20px; margin: 20px 0; border-radius: 8px; }
+.endpoint h3 { color: #8b5cf6; margin-top: 0; }
+.status { display: inline-block; padding: 4px 12px; border-radius: 4px; font-weight: bold; }
+.status.ok { background: #3fb950; color: white; }
+.status.fail { background: #f85149; color: white; }
+pre { background: #0d1117; padding: 12px; border-radius: 6px; overflow-x: auto; border: 1px solid #30363d; }
+button { background: #8b5cf6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+button:hover { background: #a78bfa; }
+</style>
+</head>
+<body>
+<h1>🎮 Tekathon API Live Test</h1>
+<p>Testing live API endpoints at <code>https://tekken-api.ridder8969.workers.dev</code></p>
+
+<button onclick="testAll()">Test All Endpoints</button>
+
+<div id="results"></div>
+
+<script>
+const API_BASE = 'https://tekken-api.ridder8969.workers.dev';
+
+const endpoints = [
+  { name: 'API Info', url: '/' },
+  { name: 'Health Check', url: '/health' },
+  { name: 'Leaderboard', url: '/leaderboard?limit=3' },
+  { name: 'Most Played Characters', url: '/analytics/most-played' },
+  { name: 'Highest Win Rates', url: '/analytics/highest-winrate' },
+  { name: 'Rank Distribution', url: '/analytics/rank-distribution' },
+  { name: 'Player Profile', url: '/player/TKN-001-ARSLAN' },
+  { name: 'All Characters', url: '/character' },
+  { name: 'Search', url: '/search?q=arslan' }
+];
+
+async function testAll() {
+  const results = document.getElementById('results');
+  results.innerHTML = '<p>Testing...</p>';
+  
+  let html = '';
+  
+  for (const ep of endpoints) {
+    html += `<div class="endpoint">`;
+    html += `<h3>${ep.name}</h3>`;
+    html += `<p><code>${API_BASE}${ep.url}</code></p>`;
+    
+    try {
+      const start = Date.now();
+      const response = await fetch(API_BASE + ep.url);
+      const time = Date.now() - start;
+      const data = await response.json();
+      
+      if (response.ok) {
+        html += `<p><span class="status ok">✓ ${response.status}</span> <small>(${time}ms)</small></p>`;
+        html += `<pre>${JSON.stringify(data, null, 2).substring(0, 500)}${JSON.stringify(data).length > 500 ? '...' : ''}</pre>`;
+      } else {
+        html += `<p><span class="status fail">✗ ${response.status}</span></p>`;
+        html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      }
+    } catch (error) {
+      html += `<p><span class="status fail">✗ ERROR</span></p>`;
+      html += `<pre>${error.message}</pre>`;
+    }
+    
+    html += `</div>`;
+  }
+  
+  results.innerHTML = html;
+}
+
+// Auto-test on load
+window.addEventListener('load', testAll);
+</script>
+</body>
+</html>
