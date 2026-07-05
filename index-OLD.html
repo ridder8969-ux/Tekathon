@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tekathon - TEKKEN 8 Statistics & Analytics</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-dark: #0d1117;
+    --bg-darker: #010409;
+    --surface: #161b22;
+    --surface-hover: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #7d8590;
+    --text-dimmer: #6e7681;
+    --accent: #8b5cf6;
+    --accent-light: #a78bfa;
+    --accent-dim: rgba(139, 92, 246, 0.1);
+    --success: #3fb950;
+    --danger: #f85149;
+    --warning: #d29922;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* Top Bar */
+  .topbar {
+    background: var(--bg-darker);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+  }
+
+  .topbar-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: white;
+  }
+
+  .brand-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .brand-text .accent { color: var(--accent); }
+
+  .topnav {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .topnav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .topnav a:hover {
+    color: var(--text);
+    background: var(--surface);
+  }
+
+  .topnav a.active {
+    color: var(--text);
+    background: var(--accent-dim);
+  }
+
+  /* Hero */
+  .hero {
+    background: linear-gradient(180deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
+    padding: 60px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-content {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 800;
+    margin-bottom: 16px;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--text), var(--accent-light));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero p {
+    font-size: 1.2rem;
+    color: var(--text-dim);
+    margin-bottom: 40px;
+  }
+
+  /* Search */
+  .search-wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .search-box {
+    position: relative;
+    display: flex;
+    gap: 8px;
+  }
+
+  .search-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.2s;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-dimmer);
+  }
+
+  .search-btn {
+    background: var(--accent);
+    border: none;
+    color: white;
+    padding: 0 32px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .search-btn:hover {
+    background: var(--accent-light);
+    transform: translateY(-1px);
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    max-width: 1400px;
+    margin: -40px auto 0;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .stat-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
+  }
+
+  .stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-value.loading {
+    color: var(--text-dimmer);
+  }
+
+  .stat-label {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Main Content */
+  .container {
+    max-width: 1400px;
+    margin: 60px auto;
+    padding: 0 24px;
+  }
+
+  .section {
+    margin-bottom: 48px;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .section-subtitle {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-top: 4px;
+  }
+
+  .view-all {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .view-all:hover {
+    background: var(--accent-dim);
+  }
+
+  /* Chart Card */
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .chart-card:hover {
+    border-color: var(--accent);
+  }
+
+  .chart-header {
+    margin-bottom: 24px;
+  }
+
+  .chart-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .chart-desc {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+  }
+
+  .chart-container {
+    position: relative;
+    height: 400px;
+  }
+
+  /* Grid Layout */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 24px;
+  }
+
+  /* Loading */
+  .loading-state {
+    text-align: center;
+    padding: 80px 24px;
+  }
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Footer */
+  .footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 48px 24px;
+    margin-top: 80px;
+  }
+
+  .footer-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .footer-text {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    line-height: 1.8;
+  }
+
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .footer-link {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+  }
+
+  .footer-link:hover {
+    color: var(--accent);
+  }
+
+  @media (max-width: 768px) {
+    .topnav { display: none; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); margin-top: -30px; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .chart-container { height: 300px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="topbar-content">
+    <a href="./index.html" class="brand">
+      <div class="brand-icon">T</div>
+      <div class="brand-text">Teka<span class="accent">thon</span></div>
+    </a>
+    <nav class="topnav">
+      <a href="./index.html" class="active">Home</a>
+      <a href="./search.html">Search</a>
+      <a href="./leaderboard.html">Leaderboards</a>
+      <a href="./analytics.html">Analytics</a>
+      <a href="./dashboard.html">Dashboard</a>
+    </nav>
+  </div>
+</div>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>TEKKEN 8 Statistics</h1>
+    <p>Real-time player stats, match history, and meta analysis</p>
+    
+    <div class="search-wrapper">
+      <div class="search-box">
+        <input 
+          type="text" 
+          class="search-input" 
+          id="searchInput"
+          placeholder="Search player by Tekken ID or username..."
+          autocomplete="off"
+        >
+        <button class="search-btn" onclick="searchPlayer()">Search</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-value loading" id="totalPlayers">—</div>
+    <div class="stat-label">Known Players</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value loading" id="totalMatches">—</div>
+    <div class="stat-label">Tracked Matches</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value loading" id="totalCharacters">42</div>
+    <div class="stat-label">Characters</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value" id="updateStatus">Live</div>
+    <div class="stat-label">Data Status</div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+  
+  <!-- Rank Distribution -->
+  <section class="section">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Rank Distribution</h2>
+        <p class="section-subtitle">Player distribution across rank tiers</p>
+      </div>
+      <a href="./leaderboard.html" class="view-all">View Leaderboard →</a>
+    </div>
+    
+    <div class="chart-card">
+      <div class="chart-container" id="rankChartContainer">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p style="color: var(--text-dim);">Loading rank data...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Character Stats -->
+  <div class="grid-2">
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <h3 class="section-title" style="font-size: 1.5rem;">Most Played</h3>
+          <p class="section-subtitle">Top characters by usage</p>
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <div class="chart-container" id="playedChartContainer">
+          <div class="loading-state">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <h3 class="section-title" style="font-size: 1.5rem;">Best Win Rates</h3>
+          <p class="section-subtitle">Top performing characters</p>
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <div class="chart-container" id="winrateChartContainer">
+          <div class="loading-state">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-content">
+    <p class="footer-text">
+      Tekathon is an unofficial TEKKEN® 8 Statistics website.<br>
+      Not affiliated with Bandai Namco Entertainment Inc.
+    </p>
+    <div class="footer-links">
+      <a href="./about.html" class="footer-link">About</a>
+      <a href="./api-docs.html" class="footer-link">API</a>
+      <a href="mailto:support@Tekathon.gg" class="footer-link">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Search functionality
+function searchPlayer() {
+  const query = document.getElementById('searchInput').value.trim();
+  if (query) {
+    window.location.href = `./player.html?id=${encodeURIComponent(query)}`;
+  }
+}
+
+document.getElementById('searchInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') searchPlayer();
+});
+
+// Load site stats
+async function loadSiteStats() {
+  try {
+    const res = await fetch('/api/sitestats');
+    const data = await res.json();
+    
+    if (data.available && data.data) {
+      const stats = data.data;
+      document.getElementById('totalPlayers').textContent = formatNumber(stats.totalPlayers || stats.activePlayers || 0);
+      document.getElementById('totalMatches').textContent = formatNumber(stats.totalMatches || stats.rankedMatches || 0);
+      
+      document.getElementById('totalPlayers').classList.remove('loading');
+      document.getElementById('totalMatches').classList.remove('loading');
+    }
+  } catch (e) {
+    console.error('Failed to load site stats:', e);
+  }
+}
+
+// Load rank distribution
+async function loadRankDistribution() {
+  try {
+    const res = await fetch('/api/analytics/rank-distribution');
+    const data = await res.json();
+    
+    if (data.success && data.data) {
+      renderRankChart(data.data);
+    }
+  } catch (e) {
+    console.error('Failed to load rank distribution:', e);
+    document.getElementById('rankChartContainer').innerHTML = '<p style="text-align:center;color:var(--text-dim);padding:40px;">Failed to load rank data</p>';
+  }
+}
+
+// Load most played characters
+async function loadMostPlayed() {
+  try {
+    const res = await fetch('/api/analytics/most-played');
+    const data = await res.json();
+    
+    if (data.success && data.data) {
+      renderMostPlayedChart(data.data.slice(0, 10));
+    }
+  } catch (e) {
+    console.error('Failed to load most played:', e);
+    document.getElementById('playedChartContainer').innerHTML = '<p style="text-align:center;color:var(--text-dim);padding:40px;">Failed to load data</p>';
+  }
+}
+
+// Load win rates
+async function loadWinRates() {
+  try {
+    const res = await fetch('/api/analytics/highest-winrate');
+    const data = await res.json();
+    
+    if (data.success && data.data) {
+      renderWinRateChart(data.data.slice(0, 10));
+    }
+  } catch (e) {
+    console.error('Failed to load win rates:', e);
+    document.getElementById('winrateChartContainer').innerHTML = '<p style="text-align:center;color:var(--text-dim);padding:40px;">Failed to load data</p>';
+  }
+}
+
+// Render rank chart
+function renderRankChart(ranks) {
+  const container = document.getElementById('rankChartContainer');
+  container.innerHTML = '<canvas id="rankChart"></canvas>';
+  
+  const ctx = document.getElementById('rankChart');
+  
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ranks.map(r => r.rank || r.name),
+      datasets: [{
+        label: 'Players',
+        data: ranks.map(r => r.count || 0),
+        backgroundColor: 'rgba(139, 92, 246, 0.8)',
+        borderColor: 'rgba(139, 92, 246, 1)',
+        borderWidth: 0,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#161b22',
+          titleColor: '#e6edf3',
+          bodyColor: '#7d8590',
+          borderColor: '#30363d',
+          borderWidth: 1,
+          padding: 12,
+          displayColors: false
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false, color: '#30363d' },
+          ticks: { 
+            color: '#7d8590',
+            font: { size: 10 },
+            maxRotation: 45,
+            minRotation: 45
+          }
+        },
+        y: {
+          grid: { color: '#30363d' },
+          ticks: { 
+            color: '#7d8590',
+            callback: (value) => formatNumber(value)
+          }
+        }
+      }
+    }
+  });
+}
+
+// Render most played chart
+function renderMostPlayedChart(chars) {
+  const container = document.getElementById('playedChartContainer');
+  container.innerHTML = '<canvas id="playedChart"></canvas>';
+  
+  const ctx = document.getElementById('playedChart');
+  
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: chars.map(c => c.character || c.name),
+      datasets: [{
+        label: 'Matches',
+        data: chars.map(c => c.matches || c.count || 0),
+        backgroundColor: 'rgba(139, 92, 246, 0.8)',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#161b22',
+          titleColor: '#e6edf3',
+          bodyColor: '#7d8590',
+          borderColor: '#30363d',
+          borderWidth: 1,
+          padding: 12
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#30363d' },
+          ticks: { color: '#7d8590' }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { color: '#7d8590' }
+        }
+      }
+    }
+  });
+}
+
+// Render win rate chart
+function renderWinRateChart(chars) {
+  const container = document.getElementById('winrateChartContainer');
+  container.innerHTML = '<canvas id="winrateChart"></canvas>';
+  
+  const ctx = document.getElementById('winrateChart');
+  
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: chars.map(c => c.character || c.name),
+      datasets: [{
+        label: 'Win Rate %',
+        data: chars.map(c => c.winRate || 0),
+        backgroundColor: 'rgba(63, 185, 80, 0.8)',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#161b22',
+          titleColor: '#e6edf3',
+          bodyColor: '#7d8590',
+          borderColor: '#30363d',
+          borderWidth: 1,
+          padding: 12,
+          callbacks: {
+            label: (context) => `${context.parsed.x.toFixed(1)}% Win Rate`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#30363d' },
+          ticks: { 
+            color: '#7d8590',
+            callback: (value) => value + '%'
+          },
+          max: 100
+        },
+        y: {
+          grid: { display: false },
+          ticks: { color: '#7d8590' }
+        }
+      }
+    }
+  });
+}
+
+// Format number helper
+function formatNumber(num) {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
+}
+
+// Initialize - load all data
+loadSiteStats();
+loadRankDistribution();
+loadMostPlayed();
+loadWinRates();
+</script>
+
+</body>
+</html>

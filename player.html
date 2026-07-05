@@ -4,561 +4,493 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Player Profile - Tekathon</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="./assets/styles/design-system.css">
 <style>
-  :root {
-    --bg-dark: #0d1117;
-    --bg-darker: #010409;
-    --surface: #161b22;
-    --surface-hover: #1c2128;
-    --border: #30363d;
-    --text: #e6edf3;
-    --text-dim: #7d8590;
-    --text-dimmer: #6e7681;
-    --accent: #8b5cf6;
-    --accent-light: #a78bfa;
-    --accent-dim: rgba(139, 92, 246, 0.1);
-    --success: #3fb950;
-    --danger: #f85149;
-  }
+.profile-header {
+  background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-primary) 100%);
+  padding: var(--space-3xl) 0;
+  border-bottom: 1px solid var(--border);
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    background: var(--bg-dark);
-    color: var(--text);
-    line-height: 1.6;
-  }
+.profile-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xl);
+  margin-bottom: var(--space-xl);
+}
 
-  .topbar {
-    background: var(--bg-darker);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 0;
-  }
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-extrabold);
+  font-size: 3rem;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-glow);
+}
 
-  .topbar-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+.profile-info {
+  flex: 1;
+}
 
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-  }
+.profile-name {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-extrabold);
+  margin-bottom: var(--space-sm);
+}
 
-  .brand-icon {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-light));
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 1.3rem;
-    color: white;
-  }
+.profile-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-md);
+}
 
-  .brand-text {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text);
-  }
+.profile-rank {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--primary-glow);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-bold);
+  color: var(--primary-light);
+}
 
-  .brand-text .accent { color: var(--accent); }
+.profile-character {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-semibold);
+}
 
-  .container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 32px 24px;
-  }
+.profile-prowess {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-extrabold);
+  color: var(--primary);
+  font-family: var(--font-mono);
+}
 
-  .player-header {
-    background: linear-gradient(135deg, var(--surface), var(--surface-hover));
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 40px;
-    margin-bottom: 32px;
-    position: relative;
-    overflow: hidden;
-  }
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-2xl) 0;
+}
 
-  .player-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 400px;
-    height: 100%;
-    background: radial-gradient(circle at top right, var(--accent-dim), transparent);
-    pointer-events: none;
-  }
+.stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+}
 
-  .player-main {
-    position: relative;
-    display: flex;
-    gap: 32px;
-    align-items: flex-start;
-  }
+.stat-box-value {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-extrabold);
+  color: var(--primary);
+  margin-bottom: var(--space-sm);
+}
 
-  .player-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-light));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 3rem;
-    flex-shrink: 0;
-    box-shadow: 0 10px 40px rgba(139, 92, 246, 0.3);
-  }
+.stat-box-label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: var(--font-semibold);
+}
 
-  .player-info {
-    flex: 1;
-  }
+.stat-box-sub {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
 
-  .player-name {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin-bottom: 16px;
-    letter-spacing: -0.02em;
-  }
+.content-tabs {
+  display: flex;
+  gap: var(--space-md);
+  border-bottom: 2px solid var(--border);
+  margin-bottom: var(--space-xl);
+}
 
-  .player-meta {
-    display: flex;
-    gap: 24px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-  }
+.tab {
+  padding: var(--space-md) var(--space-lg);
+  color: var(--text-secondary);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all var(--transition-fast);
+}
 
-  .meta-item {
-    display: flex;
+.tab:hover {
+  color: var(--text-primary);
+}
+
+.tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.match-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.match-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-lg);
+  align-items: center;
+  transition: all var(--transition-fast);
+}
+
+.match-card:hover {
+  border-color: var(--border-light);
+  background: var(--surface-hover);
+}
+
+.match-result {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-extrabold);
+  font-size: var(--text-2xl);
+  flex-shrink: 0;
+}
+
+.match-result.win {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.match-result.loss {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.match-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.match-opponent {
+  font-weight: var(--font-bold);
+  font-size: var(--text-lg);
+}
+
+.match-meta {
+  display: flex;
+  gap: var(--space-md);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.match-stats {
+  text-align: right;
+}
+
+.match-score {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-extrabold);
+  margin-bottom: 4px;
+}
+
+.match-date {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 768px) {
+  .profile-main {
     flex-direction: column;
-  }
-
-  .meta-label {
-    font-size: 0.85rem;
-    color: var(--text-dim);
-    margin-bottom: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .meta-value {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  .meta-value.rank {
-    color: var(--accent);
-  }
-
-  .player-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-    margin-top: 24px;
-  }
-
-  .stat-box {
-    background: var(--bg-dark);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
     text-align: center;
-    transition: all 0.2s;
   }
-
-  .stat-box:hover {
-    border-color: var(--accent);
+  .profile-meta {
+    justify-content: center;
   }
-
-  .stat-value {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--accent);
-    margin-bottom: 8px;
-  }
-
-  .stat-label {
-    font-size: 0.85rem;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .loading {
-    text-align: center;
-    padding: 80px 20px;
-  }
-
-  .spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 24px;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  .error-state {
-    text-align: center;
-    padding: 80px 20px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-  }
-
-  .error-state h2 {
-    font-size: 2rem;
-    margin-bottom: 12px;
-  }
-
-  .error-state p {
-    color: var(--text-dim);
-    margin-bottom: 24px;
-  }
-
-  .error-btn {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 12px 32px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-  }
-
-  .error-btn:hover {
-    background: var(--accent-light);
-  }
-
-  .tabs {
-    display: flex;
-    gap: 8px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 32px;
-  }
-
-  .tab {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    padding: 16px 24px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    border-bottom: 2px solid transparent;
-  }
-
-  .tab:hover {
-    color: var(--text);
-  }
-
-  .tab.active {
-    color: var(--text);
-    border-bottom-color: var(--accent);
-  }
-
-  .tab-content {
-    display: none;
-  }
-
-  .tab-content.active {
-    display: block;
-  }
-
-  .match-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
   .match-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 20px;
-    align-items: center;
-    transition: all 0.2s;
-  }
-
-  .match-card:hover {
-    border-color: var(--accent);
-  }
-
-  .match-result {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 1.2rem;
-  }
-
-  .match-result.win {
-    background: linear-gradient(135deg, var(--success), #4ade80);
-    color: white;
-  }
-
-  .match-result.loss {
-    background: linear-gradient(135deg, var(--danger), #ff6b6b);
-    color: white;
-  }
-
-  .match-details {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .match-opponent {
-    font-size: 1.1rem;
-    font-weight: 700;
-  }
-
-  .match-chars {
-    display: flex;
-    gap: 8px;
-    font-size: 0.9rem;
-    color: var(--text-dim);
-  }
-
-  .match-time {
-    font-size: 0.85rem;
-    color: var(--text-dimmer);
-    text-align: right;
-  }
-
-  .empty-state {
+    grid-template-columns: 1fr;
     text-align: center;
-    padding: 60px 20px;
-    color: var(--text-dim);
   }
-
-  @media (max-width: 768px) {
-    .player-main { flex-direction: column; align-items: center; text-align: center; }
-    .player-meta { justify-content: center; }
-    .match-card { grid-template-columns: auto 1fr; }
-    .match-time { grid-column: 1 / -1; text-align: left; }
+  .match-result {
+    margin: 0 auto;
   }
+  .match-stats {
+    text-align: center;
+  }
+}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-content">
-    <a href="./index.html" class="brand">
-      <div class="brand-icon">T</div>
-      <div class="brand-text">Teka<span class="accent">thon</span></div>
+<nav class="nav">
+  <div class="container nav-container">
+    <a href="./index-v2.html" class="nav-logo">
+      <div class="nav-logo-icon">T</div>
+      <span>Tekathon</span>
     </a>
+    <div class="nav-links">
+      <a href="./index-v2.html" class="nav-link">Home</a>
+      <a href="./search-v2.html" class="nav-link">Search</a>
+      <a href="./leaderboard-v2.html" class="nav-link">Leaderboards</a>
+      <a href="./analytics-v2.html" class="nav-link">Analytics</a>
+    </div>
+  </div>
+</nav>
+
+<div class="profile-header">
+  <div class="container">
+    <div class="profile-main" id="profileMain">
+      <div class="skeleton" style="width: 120px; height: 120px; border-radius: var(--radius-xl);"></div>
+      <div style="flex: 1;">
+        <div class="skeleton" style="width: 200px; height: 40px; margin-bottom: var(--space-md);"></div>
+        <div class="skeleton" style="width: 300px; height: 20px;"></div>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="container" id="loadingState">
-  <div class="loading">
-    <div class="spinner"></div>
-    <p style="color: var(--text-dim); font-size: 1.1rem;">Loading player data...</p>
+<div class="container">
+  <div class="stats-overview" id="statsOverview">
+    <!-- Loading skeletons -->
+    <div class="stat-box">
+      <div class="skeleton" style="width: 80px; height: 40px; margin: 0 auto var(--space-sm);"></div>
+      <div class="skeleton" style="width: 120px; height: 16px; margin: 0 auto;"></div>
+    </div>
   </div>
-</div>
 
-<div class="container" id="errorState" style="display:none;">
-  <div class="error-state">
-    <h2>Player Not Found</h2>
-    <p>We couldn't find a player with that ID. Double-check the Tekken ID and try again.</p>
-    <a href="./search.html" class="error-btn">Back to Search</a>
+  <div class="content-tabs">
+    <div class="tab active" onclick="switchTab('matches')">Match History</div>
+    <div class="tab" onclick="switchTab('stats')">Detailed Stats</div>
+    <div class="tab" onclick="switchTab('achievements')">Achievements</div>
   </div>
-</div>
 
-<div class="container" id="playerContent" style="display:none;">
-  <div class="player-header">
-    <div class="player-main">
-      <div class="player-avatar" id="playerAvatar">?</div>
-      <div class="player-info">
-        <h1 class="player-name" id="playerName">—</h1>
-        <div class="player-meta">
-          <div class="meta-item">
-            <span class="meta-label">Rank</span>
-            <span class="meta-value rank" id="playerRank">—</span>
-          </div>
-          <div class="meta-item">
-            <span class="meta-label">Prowess</span>
-            <span class="meta-value" id="playerProwess">—</span>
-          </div>
-          <div class="meta-item">
-            <span class="meta-label">Region</span>
-            <span class="meta-value" id="playerRegion">—</span>
-          </div>
-          <div class="meta-item">
-            <span class="meta-label">Platform</span>
-            <span class="meta-value" id="playerPlatform">—</span>
-          </div>
-          <div class="meta-item">
-            <span class="meta-label">Main</span>
-            <span class="meta-value" id="playerMain">—</span>
-          </div>
-        </div>
-        <div class="player-stats">
-          <div class="stat-box">
-            <div class="stat-value" id="playerWins">—</div>
-            <div class="stat-label">Wins</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-value" id="playerLosses">—</div>
-            <div class="stat-label">Losses</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-value" id="playerWinRate">—%</div>
-            <div class="stat-label">Win Rate</div>
-          </div>
-        </div>
+  <div id="matchesTab" class="tab-content active">
+    <div id="matchHistory" class="match-list">
+      <!-- Loading skeleton -->
+      <div class="match-card">
+        <div class="skeleton" style="width: 80px; height: 80px; border-radius: var(--radius-md);"></div>
+        <div class="skeleton" style="width: 100%; height: 60px;"></div>
+        <div class="skeleton" style="width: 80px; height: 60px;"></div>
       </div>
     </div>
   </div>
 
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab(0)">Match History</button>
-    <button class="tab" onclick="switchTab(1)">Statistics</button>
-  </div>
-
-  <div class="tab-content active" id="tab0">
-    <div class="match-list" id="matchList">
-      <div class="empty-state">No recent matches found</div>
+  <div id="statsTab" class="tab-content">
+    <div class="grid grid-3">
+      <div class="card">
+        <h3 class="text-lg font-bold mb-md">Performance</h3>
+        <div id="performanceStats">Loading...</div>
+      </div>
+      <div class="card">
+        <h3 class="text-lg font-bold mb-md">Character Usage</h3>
+        <div id="characterStats">Loading...</div>
+      </div>
+      <div class="card">
+        <h3 class="text-lg font-bold mb-md">Recent Form</h3>
+        <div id="recentForm">Loading...</div>
+      </div>
     </div>
   </div>
 
-  <div class="tab-content" id="tab1">
-    <div class="empty-state">Statistics coming soon</div>
+  <div id="achievementsTab" class="tab-content">
+    <div class="grid grid-4">
+      <div class="card text-center">
+        <div class="text-4xl mb-sm">🏆</div>
+        <div class="text-2xl font-bold mb-xs">Top 100</div>
+        <div class="text-sm text-secondary">Global Ranking</div>
+      </div>
+      <div class="card text-center">
+        <div class="text-4xl mb-sm">🔥</div>
+        <div class="text-2xl font-bold mb-xs">10 Win</div>
+        <div class="text-sm text-secondary">Streak</div>
+      </div>
+      <div class="card text-center">
+        <div class="text-4xl mb-sm">⚡</div>
+        <div class="text-2xl font-bold mb-xs">1000+</div>
+        <div class="text-sm text-secondary">Matches Played</div>
+      </div>
+      <div class="card text-center">
+        <div class="text-4xl mb-sm">👑</div>
+        <div class="text-2xl font-bold mb-xs">God</div>
+        <div class="text-sm text-secondary">Rank Achieved</div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const playerId = params.get('id');
+const EWGF_API = 'https://www.ewgf.gg/api';
+const urlParams = new URLSearchParams(window.location.search);
+const playerId = urlParams.get('id');
 
-if (!playerId) {
-  showError();
-} else {
-  loadPlayer(playerId);
-}
+async function loadPlayer() {
+  if (!playerId) {
+    window.location.href = './search-v2.html';
+    return;
+  }
 
-async function loadPlayer(id) {
   try {
-    const res = await fetch(`/api/player?id=${encodeURIComponent(id)}`);
-    const data = await res.json();
+    const response = await fetch(`${EWGF_API}/player/${playerId}`);
+    const data = await response.json();
     
-    if (!data || data.error) {
-      showError();
-      return;
+    if (data && data.data) {
+      displayProfile(data.data);
+      loadMatches(playerId);
     }
-    
-    displayPlayer(data);
-    loadMatches(id);
-  } catch (e) {
-    console.error('Failed to load player:', e);
-    showError();
+  } catch (error) {
+    console.error('Failed to load player:', error);
+    document.getElementById('profileMain').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-title">Player not found</div>
+        <div class="empty-description">Please try searching for another player</div>
+        <a href="./search-v2.html" class="btn btn-primary mt-lg">Back to Search</a>
+      </div>
+    `;
   }
 }
 
-function displayPlayer(data) {
-  const profile = data.profile || {};
-  const stats = data.stats || {};
+function displayProfile(player) {
+  const wins = player.wins || 0;
+  const losses = player.losses || 1;
+  const total = wins + losses;
+  const winRate = Math.round((wins / total) * 100);
   
-  document.getElementById('playerName').textContent = profile.name || profile.player_name || 'Unknown';
-  document.getElementById('playerAvatar').textContent = (profile.name || 'U').charAt(0).toUpperCase();
-  document.getElementById('playerRank').textContent = profile.rank || 'Unknown';
-  document.getElementById('playerProwess').textContent = formatNumber(profile.prowess || profile.rating || 0);
-  document.getElementById('playerRegion').textContent = profile.region || 'Unknown';
-  document.getElementById('playerPlatform').textContent = profile.platform || 'Unknown';
-  document.getElementById('playerMain').textContent = profile.main_character || 'Unknown';
+  document.title = `${player.name || player.username} - Tekathon`;
   
-  document.getElementById('playerWins').textContent = stats.wins || stats.totalWins || 0;
-  document.getElementById('playerLosses').textContent = stats.losses || stats.totalLosses || 0;
-  document.getElementById('playerWinRate').textContent = (stats.winRate || 0).toFixed(1);
+  document.getElementById('profileMain').innerHTML = `
+    <div class="profile-avatar">${getInitial(player.name || player.username)}</div>
+    <div class="profile-info">
+      <h1 class="profile-name">${esc(player.name || player.username || 'Unknown')}</h1>
+      <div class="profile-meta">
+        <div class="profile-rank">${esc(player.rank || player.dan_rank || 'Unknown Rank')}</div>
+        <div class="profile-character">🥋 ${esc(player.tekken_name || player.character || 'Unknown')}</div>
+        <div class="profile-prowess">${formatNumber(player.power || player.prowess || 0)} Prowess</div>
+      </div>
+    </div>
+  `;
   
-  document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('playerContent').style.display = 'block';
+  document.getElementById('statsOverview').innerHTML = `
+    <div class="stat-box">
+      <div class="stat-box-value">${wins}</div>
+      <div class="stat-box-label">Wins</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-value">${losses}</div>
+      <div class="stat-box-label">Losses</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-value">${winRate}%</div>
+      <div class="stat-box-label">Win Rate</div>
+      <div class="stat-box-sub">${wins}W - ${losses}L</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-value">${total}</div>
+      <div class="stat-box-label">Total Matches</div>
+    </div>
+  `;
 }
 
-async function loadMatches(id) {
+async function loadMatches(playerId) {
   try {
-    const res = await fetch(`/api/player?id=${encodeURIComponent(id)}`);
-    const data = await res.json();
+    const response = await fetch(`${EWGF_API}/player/${playerId}/matches`);
+    const data = await response.json();
     
-    if (data.battles && data.battles.length > 0) {
-      displayMatches(data.battles);
-    } else if (data.stats && data.stats.battles) {
-      displayMatches(data.stats.battles);
+    if (data && data.data && data.data.length > 0) {
+      displayMatches(data.data);
+    } else {
+      document.getElementById('matchHistory').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-title">No matches found</div>
+          <div class="empty-description">Match history will appear here</div>
+        </div>
+      `;
     }
-  } catch (e) {
-    console.error('Failed to load matches:', e);
+  } catch (error) {
+    console.error('Failed to load matches:', error);
+    document.getElementById('matchHistory').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-title">Unable to load matches</div>
+        <div class="empty-description">Please try again later</div>
+      </div>
+    `;
   }
 }
 
 function displayMatches(matches) {
-  if (!matches || matches.length === 0) return;
-  
-  const list = document.getElementById('matchList');
-  list.innerHTML = matches.slice(0, 20).map(match => {
-    const isWin = match.result === 'win' || match.result === 'W' || match.winner === true;
+  document.getElementById('matchHistory').innerHTML = matches.slice(0, 20).map(match => {
+    const isWin = match.result === 'win' || match.won;
+    const score = `${match.player_score || 0} - ${match.opponent_score || 0}`;
+    
     return `
       <div class="match-card">
         <div class="match-result ${isWin ? 'win' : 'loss'}">
-          ${isWin ? 'W' : 'L'}
+          ${isWin ? 'WIN' : 'LOSS'}
         </div>
         <div class="match-details">
-          <div class="match-opponent">vs ${esc(match.opponent || match.opponent_name || 'Unknown')}</div>
-          <div class="match-chars">
-            <span>${esc(match.character || match.player_character || '?')}</span> vs 
-            <span>${esc(match.opponentCharacter || match.opponent_character || '?')}</span>
+          <div class="match-opponent">vs ${esc(match.opponent_name || 'Unknown')}</div>
+          <div class="match-meta">
+            <span>${esc(match.opponent_character || 'Unknown')}</span>
+            <span>•</span>
+            <span>${esc(match.stage || 'Unknown Stage')}</span>
           </div>
         </div>
-        <div class="match-time">${formatMatchTime(match.date || match.timestamp || match.played_at)}</div>
+        <div class="match-stats">
+          <div class="match-score">${score}</div>
+          <div class="match-date">${formatDate(match.date || match.played_at)}</div>
+        </div>
       </div>
     `;
   }).join('');
 }
 
-function switchTab(index) {
-  document.querySelectorAll('.tab').forEach((tab, i) => {
-    tab.classList.toggle('active', i === index);
-  });
-  document.querySelectorAll('.tab-content').forEach((content, i) => {
-    content.classList.toggle('active', i === index);
-  });
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  
+  event.target.classList.add('active');
+  document.getElementById(tab + 'Tab').classList.add('active');
 }
 
-function showError() {
-  document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('errorState').style.display = 'block';
-}
-
-function esc(str) {
-  if (!str) return '';
-  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function formatDate(dateStr) {
+  if (!dateStr) return 'Unknown';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diff = now - date;
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days} days ago`;
+  return date.toLocaleDateString();
 }
 
 function formatNumber(num) {
@@ -567,17 +499,18 @@ function formatNumber(num) {
   return num.toString();
 }
 
-function formatMatchTime(timestamp) {
-  if (!timestamp) return 'Unknown';
-  const date = new Date(timestamp * 1000);
-  const diff = Date.now() - date.getTime();
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 30) return `${days}d ago`;
-  return date.toLocaleDateString();
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
 }
+
+function getInitial(name) {
+  return name ? name.charAt(0).toUpperCase() : '?';
+}
+
+loadPlayer();
 </script>
 
 </body>

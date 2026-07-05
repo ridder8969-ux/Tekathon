@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leaderboard - Tekathon</title>
+<style>
+  :root {
+    --bg-dark: #0d1117;
+    --bg-darker: #010409;
+    --surface: #161b22;
+    --surface-hover: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #7d8590;
+    --text-dimmer: #6e7681;
+    --accent: #8b5cf6;
+    --accent-light: #a78bfa;
+    --accent-dim: rgba(139, 92, 246, 0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .topbar {
+    background: var(--bg-darker);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .topbar-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: white;
+  }
+
+  .brand-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .brand-text .accent { color: var(--accent); }
+
+  .topnav {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .topnav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .topnav a:hover, .topnav a.active {
+    color: var(--text);
+    background: var(--accent-dim);
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+
+  .page-header p {
+    color: var(--text-dim);
+    font-size: 1.1rem;
+  }
+
+  .filters {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .filter-label {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .filter-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    min-width: 160px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  .filter-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-btn:hover {
+    background: var(--accent-light);
+  }
+
+  .filter-btn.secondary {
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .filter-btn.secondary:hover {
+    background: var(--surface-hover);
+  }
+
+  .leaderboard-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .table-header {
+    display: grid;
+    grid-template-columns: 70px 1fr 150px 120px 100px;
+    gap: 16px;
+    padding: 16px 24px;
+    background: var(--bg-darker);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+  }
+
+  .table-row {
+    display: grid;
+    grid-template-columns: 70px 1fr 150px 120px 100px;
+    gap: 16px;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .table-row:last-child {
+    border-bottom: none;
+  }
+
+  .table-row:hover {
+    background: var(--surface-hover);
+  }
+
+  .rank-cell {
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: var(--text-dim);
+  }
+
+  .rank-cell.top3 {
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .player-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .player-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .player-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .player-name {
+    font-weight: 700;
+    font-size: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .player-id {
+    font-size: 0.8rem;
+    color: var(--text-dimmer);
+    margin-top: 2px;
+  }
+
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    background: var(--accent-dim);
+    color: var(--accent);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .prowess-cell {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--accent);
+    text-align: right;
+  }
+
+  .winrate-cell {
+    text-align: right;
+  }
+
+  .winrate-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .winrate-pct {
+    font-weight: 700;
+    font-size: 0.9rem;
+    min-width: 45px;
+  }
+
+  .winrate-visual {
+    width: 60px;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .winrate-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+    border-radius: 3px;
+  }
+
+  .pagination {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .page-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .page-btn:hover:not(:disabled) {
+    background: var(--surface-hover);
+    border-color: var(--accent);
+  }
+
+  .page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .page-info {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+  }
+
+  .loading, .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 768px) {
+    .topnav { display: none; }
+    .table-header, .table-row {
+      grid-template-columns: 50px 1fr 90px;
+      gap: 12px;
+      padding: 12px 16px;
+    }
+    .rank-badge, .winrate-cell { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-content">
+    <a href="./index.html" class="brand">
+      <div class="brand-icon">T</div>
+      <div class="brand-text">Teka<span class="accent">thon</span></div>
+    </a>
+    <nav class="topnav">
+      <a href="./index.html">Home</a>
+      <a href="./search.html">Search</a>
+      <a href="./leaderboard.html" class="active">Leaderboards</a>
+      <a href="./analytics.html">Analytics</a>
+      <a href="./dashboard.html">Dashboard</a>
+    </nav>
+  </div>
+</div>
+
+<div class="container">
+  <div class="page-header">
+    <h1>Global Leaderboard</h1>
+    <p>Top TEKKEN 8 players ranked by prowess and performance</p>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label class="filter-label">Region</label>
+      <select class="filter-select" id="regionFilter">
+        <option value="">All Regions</option>
+        <option value="Asia">Asia</option>
+        <option value="Europe">Europe</option>
+        <option value="North America">North America</option>
+        <option value="South America">South America</option>
+        <option value="Oceania">Oceania</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Rank</label>
+      <select class="filter-select" id="rankFilter">
+        <option value="">All Ranks</option>
+        <option value="Tekken God Supreme">Tekken God Supreme</option>
+        <option value="Tekken God">Tekken God</option>
+        <option value="Tekken Emperor">Tekken Emperor</option>
+        <option value="Tekken King">Tekken King</option>
+        <option value="Raijin">Raijin</option>
+      </select>
+    </div>
+    <button class="filter-btn" id="applyBtn">Apply Filters</button>
+    <button class="filter-btn secondary" id="resetBtn">Reset</button>
+  </div>
+
+  <div id="loading" class="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p>Loading leaderboard...</p>
+  </div>
+
+  <div id="empty" class="empty" style="display:none;">
+    <h3>No players found</h3>
+    <p>Try adjusting your filters</p>
+  </div>
+
+  <div id="leaderboardTable"></div>
+
+  <div class="pagination" id="pagination" style="display:none;">
+    <button class="page-btn" id="prevBtn">← Previous</button>
+    <span class="page-info" id="pageInfo">Page 1</span>
+    <button class="page-btn" id="nextBtn">Next →</button>
+  </div>
+</div>
+
+<script>
+const loading = document.getElementById('loading');
+const empty = document.getElementById('empty');
+const table = document.getElementById('leaderboardTable');
+const pagination = document.getElementById('pagination');
+const regionFilter = document.getElementById('regionFilter');
+const rankFilter = document.getElementById('rankFilter');
+const applyBtn = document.getElementById('applyBtn');
+const resetBtn = document.getElementById('resetBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const pageInfo = document.getElementById('pageInfo');
+
+let currentPage = 0;
+const pageSize = 50;
+
+async function loadLeaderboard() {
+  loading.style.display = 'block';
+  empty.style.display = 'none';
+  table.style.display = 'none';
+  pagination.style.display = 'none';
+
+  const region = regionFilter.value;
+  const rank = rankFilter.value;
+  const offset = currentPage * pageSize;
+
+  let url = `/api/leaderboard?limit=${pageSize}&offset=${offset}`;
+  if (region) url += `&region=${encodeURIComponent(region)}`;
+  if (rank) url += `&rank=${encodeURIComponent(rank)}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    loading.style.display = 'none';
+
+    if (!data.success || !data.data || data.data.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
+
+    renderLeaderboard(data.data);
+    updatePagination(data.data.length);
+  } catch (error) {
+    loading.style.display = 'none';
+    empty.style.display = 'block';
+    console.error('Failed to load leaderboard:', error);
+  }
+}
+
+function renderLeaderboard(players) {
+  let html = '<div class="leaderboard-table">';
+  html += '<div class="table-header">';
+  html += '<div>Rank</div><div>Player</div><div>Current Rank</div><div>Prowess</div><div>Win Rate</div>';
+  html += '</div>';
+
+  players.forEach((player, idx) => {
+    const rankNum = currentPage * pageSize + idx + 1;
+    const isTop3 = rankNum <= 3;
+    const name = player.username || player.name || player.tekkenId || player.tekken_id || 'Unknown';
+    const tekkenId = player.tekkenId || player.tekken_id || '';
+    const rank = player.currentRank || player.current_rank || player.rank || '—';
+    const prowess = player.prowess || 0;
+    const winRate = player.winRate || player.win_rate || 0;
+
+    html += `<div class="table-row" onclick="viewPlayer('${esc(tekkenId)}')">`;
+    html += `<div class="rank-cell ${isTop3 ? 'top3' : ''}">#${rankNum}</div>`;
+    html += '<div class="player-cell">';
+    html += `<div class="player-avatar">${getInitial(name)}</div>`;
+    html += '<div class="player-info">';
+    html += `<div class="player-name">${esc(name)}</div>`;
+    if (tekkenId) html += `<div class="player-id">${esc(tekkenId)}</div>`;
+    html += '</div></div>';
+    html += `<div class="rank-badge">${esc(rank)}</div>`;
+    html += `<div class="prowess-cell">${formatNumber(prowess)}</div>`;
+    html += '<div class="winrate-cell"><div class="winrate-bar">';
+    html += `<span class="winrate-pct">${Math.round(winRate)}%</span>`;
+    html += `<div class="winrate-visual"><div class="winrate-fill" style="width:${Math.round(winRate)}%"></div></div>`;
+    html += '</div></div>';
+    html += '</div>';
+  });
+
+  html += '</div>';
+  table.innerHTML = html;
+  table.style.display = 'block';
+}
+
+function updatePagination(count) {
+  if (count === 0) return;
+  
+  pagination.style.display = 'flex';
+  pageInfo.textContent = `Page ${currentPage + 1}`;
+  
+  prevBtn.disabled = currentPage === 0;
+  nextBtn.disabled = count < pageSize;
+}
+
+function viewPlayer(tekkenId) {
+  if (tekkenId && tekkenId !== 'Unknown') {
+    window.location.href = `./player.html?id=${encodeURIComponent(tekkenId)}`;
+  }
+}
+
+applyBtn.addEventListener('click', () => {
+  currentPage = 0;
+  loadLeaderboard();
+});
+
+resetBtn.addEventListener('click', () => {
+  regionFilter.value = '';
+  rankFilter.value = '';
+  currentPage = 0;
+  loadLeaderboard();
+});
+
+prevBtn.addEventListener('click', () => {
+  if (currentPage > 0) {
+    currentPage--;
+    loadLeaderboard();
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  currentPage++;
+  loadLeaderboard();
+});
+
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function getInitial(name) {
+  if (!name) return '?';
+  return String(name).charAt(0).toUpperCase();
+}
+
+function formatNumber(num) {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
+}
+
+// Load initial data
+loadLeaderboard();
+</script>
+
+</body>
+</html>

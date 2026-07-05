@@ -4,544 +4,499 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Search Players - Tekathon</title>
+<link rel="stylesheet" href="./assets/styles/design-system.css">
 <style>
-  :root {
-    --bg-dark: #0d1117;
-    --bg-darker: #010409;
-    --surface: #161b22;
-    --surface-hover: #1c2128;
-    --border: #30363d;
-    --text: #e6edf3;
-    --text-dim: #7d8590;
-    --text-dimmer: #6e7681;
-    --accent: #8b5cf6;
-    --accent-light: #a78bfa;
-    --accent-dim: rgba(139, 92, 246, 0.1);
-  }
+.search-hero {
+  padding: var(--space-3xl) 0 var(--space-2xl);
+  text-align: center;
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    background: var(--bg-dark);
-    color: var(--text);
-    line-height: 1.6;
-  }
+.search-container {
+  max-width: 700px;
+  margin: 0 auto var(--space-3xl);
+}
 
-  .topbar {
-    background: var(--bg-darker);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 0;
-  }
+.search-box {
+  position: relative;
+}
 
-  .topbar-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+.search-input {
+  width: 100%;
+  padding: 20px 24px 20px 60px;
+  font-size: var(--text-lg);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xl);
+  color: var(--text-primary);
+  transition: all var(--transition-base);
+}
 
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-  }
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-glow), var(--shadow-lg);
+}
 
-  .brand-icon {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-light));
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 1.3rem;
-    color: white;
-  }
+.search-icon {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  font-size: var(--text-xl);
+}
 
-  .brand-text {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text);
-  }
+.search-results {
+  position: absolute;
+  top: calc(100% + var(--space-sm));
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  max-height: 500px;
+  overflow-y: auto;
+  z-index: var(--z-dropdown);
+}
 
-  .brand-text .accent { color: var(--accent); }
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
 
-  .topnav {
-    display: flex;
-    gap: 24px;
-    align-items: center;
-  }
+.search-result-item:last-child {
+  border-bottom: none;
+}
 
-  .topnav a {
-    color: var(--text-dim);
-    text-decoration: none;
-    font-size: 0.95rem;
-    font-weight: 500;
-    padding: 8px 12px;
-    border-radius: 6px;
-    transition: all 0.2s;
-  }
+.search-result-item:hover {
+  background: var(--surface-hover);
+}
 
-  .topnav a:hover, .topnav a.active {
-    color: var(--text);
-    background: var(--accent-dim);
-  }
+.search-result-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-extrabold);
+  font-size: var(--text-xl);
+  flex-shrink: 0;
+}
 
-  .container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 60px 24px;
-  }
+.search-result-info {
+  flex: 1;
+  min-width: 0;
+}
 
-  .page-header {
-    text-align: center;
-    margin-bottom: 48px;
-  }
+.search-result-name {
+  font-weight: var(--font-bold);
+  font-size: var(--text-lg);
+  margin-bottom: 4px;
+}
 
-  .page-header h1 {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin-bottom: 12px;
-    letter-spacing: -0.02em;
-  }
+.search-result-meta {
+  display: flex;
+  gap: var(--space-md);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
 
-  .page-header p {
-    color: var(--text-dim);
-    font-size: 1.1rem;
-  }
+.search-result-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: var(--primary-glow);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--primary-light);
+}
 
-  .search-box {
-    position: relative;
-    margin-bottom: 48px;
-  }
+.popular-searches {
+  margin-top: var(--space-xl);
+}
 
+.popular-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.popular-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.popular-tag {
+  padding: var(--space-sm) var(--space-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.popular-tag:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.recent-searches-section {
+  padding: var(--space-2xl) 0;
+}
+
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-lg);
+}
+
+.player-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.player-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-lg);
+}
+
+.player-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.player-card-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-extrabold);
+  font-size: var(--text-2xl);
+  flex-shrink: 0;
+}
+
+.player-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-card-name {
+  font-weight: var(--font-bold);
+  font-size: var(--text-xl);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-card-rank {
+  color: var(--primary);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+}
+
+.player-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+.player-card-stat {
+  text-align: center;
+}
+
+.player-card-stat-value {
+  font-weight: var(--font-bold);
+  font-size: var(--text-lg);
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.player-card-stat-label {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-3xl) var(--space-lg);
+}
+
+.empty-icon {
+  font-size: 64px;
+  opacity: 0.3;
+  margin-bottom: var(--space-lg);
+}
+
+.empty-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-sm);
+}
+
+.empty-description {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+}
+
+@media (max-width: 640px) {
   .search-input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 18px 24px;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    transition: all 0.2s;
+    padding: 16px 20px 16px 56px;
+    font-size: var(--text-base);
   }
-
-  .search-input:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-dim);
-  }
-
-  .search-input::placeholder {
-    color: var(--text-dimmer);
-  }
-
-  .suggestions {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-top: 8px;
-    max-height: 400px;
-    overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    display: none;
-    z-index: 100;
-  }
-
-  .suggestions.show {
-    display: block;
-  }
-
-  .suggestion-item {
-    padding: 16px 20px;
-    cursor: pointer;
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .suggestion-item:last-child {
-    border-bottom: none;
-  }
-
-  .suggestion-item:hover {
-    background: var(--surface-hover);
-  }
-
-  .suggestion-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent-light));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 1.2rem;
-    flex-shrink: 0;
-  }
-
-  .suggestion-info {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .suggestion-name {
-    font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: 4px;
-  }
-
-  .suggestion-meta {
-    display: flex;
-    gap: 12px;
-    font-size: 0.85rem;
-    color: var(--text-dim);
-  }
-
-  .suggestion-rank {
-    color: var(--accent);
-    font-weight: 600;
-  }
-
-  .section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 32px;
-  }
-
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-
-  .section-title {
-    font-size: 1.2rem;
-    font-weight: 700;
-  }
-
-  .clear-btn {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    cursor: pointer;
-    font-size: 0.9rem;
-    padding: 4px 12px;
-    border-radius: 6px;
-    transition: all 0.2s;
-  }
-
-  .clear-btn:hover {
-    color: var(--accent);
-    background: var(--accent-dim);
-  }
-
-  .recent-list {
-    display: flex;
+  .search-result-meta {
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
   }
-
-  .recent-item {
-    padding: 12px 16px;
-    background: var(--bg-dark);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .players-grid {
+    grid-template-columns: 1fr;
   }
-
-  .recent-item:hover {
-    background: var(--surface-hover);
-    transform: translateX(4px);
-  }
-
-  .recent-name {
-    font-weight: 500;
-  }
-
-  .recent-time {
-    font-size: 0.85rem;
-    color: var(--text-dimmer);
-  }
-
-  .popular-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
-  }
-
-  .popular-card {
-    background: var(--bg-dark);
-    border-radius: 8px;
-    padding: 16px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-  }
-
-  .popular-card:hover {
-    background: var(--surface-hover);
-    transform: translateY(-2px);
-  }
-
-  .popular-avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent-light));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 1.5rem;
-    margin: 0 auto 12px;
-  }
-
-  .popular-name {
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-
-  .popular-rank {
-    font-size: 0.85rem;
-    color: var(--text-dim);
-  }
-
-  .loading {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-dim);
-  }
-
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 16px;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  @media (max-width: 768px) {
-    .topnav { display: none; }
-    .popular-grid { grid-template-columns: 1fr; }
-  }
+}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-content">
-    <a href="./index.html" class="brand">
-      <div class="brand-icon">T</div>
-      <div class="brand-text">Teka<span class="accent">thon</span></div>
+<!-- Navigation (same as homepage) -->
+<nav class="nav">
+  <div class="container nav-container">
+    <a href="./index-v2.html" class="nav-logo">
+      <div class="nav-logo-icon">T</div>
+      <span>Tekathon</span>
     </a>
-    <nav class="topnav">
-      <a href="./index.html">Home</a>
-      <a href="./search.html" class="active">Search</a>
-      <a href="./leaderboard.html">Leaderboards</a>
-      <a href="./analytics.html">Analytics</a>
-      <a href="./dashboard.html">Dashboard</a>
-    </nav>
-  </div>
-</div>
-
-<div class="container">
-  <div class="page-header">
-    <h1>Player Search</h1>
-    <p>Find any TEKKEN 8 player by their ID or username</p>
-  </div>
-
-  <div class="search-box">
-    <input 
-      type="text" 
-      class="search-input" 
-      id="searchInput"
-      placeholder="Enter player name or Tekken ID..."
-      autocomplete="off"
-    >
-    <div class="suggestions" id="suggestions"></div>
-  </div>
-
-  <div class="section" id="recentSection" style="display:none;">
-    <div class="section-header">
-      <h3 class="section-title">Recent Searches</h3>
-      <button class="clear-btn" onclick="clearRecent()">Clear All</button>
+    <div class="nav-links">
+      <a href="./index-v2.html" class="nav-link">Home</a>
+      <a href="./search-v2.html" class="nav-link active">Search</a>
+      <a href="./leaderboard-v2.html" class="nav-link">Leaderboards</a>
+      <a href="./analytics-v2.html" class="nav-link">Analytics</a>
     </div>
-    <div class="recent-list" id="recentList"></div>
   </div>
+</nav>
 
-  <div class="section">
-    <h3 class="section-title">Popular Players</h3>
-    <div id="popularLoading" class="loading">
-      <div class="spinner"></div>
-      <p>Loading popular players...</p>
-    </div>
-    <div class="popular-grid" id="popularGrid" style="display:none;"></div>
-  </div>
-</div>
+<!-- Search Hero -->
+<section class="search-hero">
+  <div class="container">
+    <h1 class="hero-title" style="margin-bottom: var(--space-md);">Find Players</h1>
+    <p class="hero-description" style="margin-bottom: var(--space-2xl);">
+      Search for any TEKKEN 8 player by username or Polaris ID
+    </p>
 
-<script>
-let searchTimeout;
-let recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+    <div class="search-container">
+      <div class="search-box">
+        <div class="search-icon">🔍</div>
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Enter player name or ID..."
+          id="searchInput"
+          autocomplete="off"
+        />
+        <div class="search-results" id="searchResults" style="display: none;"></div>
+      </div>
 
-loadRecentSearches();
-loadPopularPlayers();
-
-document.getElementById('searchInput').addEventListener('input', (e) => {
-  const query = e.target.value.trim();
-  clearTimeout(searchTimeout);
-  
-  if (query.length < 2) {
-    hideSuggestions();
-    return;
-  }
-  
-  searchTimeout = setTimeout(() => fetchSuggestions(query), 300);
-});
-
-document.getElementById('searchInput').addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    const query = e.target.value.trim();
-    if (query) selectPlayer(query);
-  }
-});
-
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.search-box')) hideSuggestions();
-});
-
-async function fetchSuggestions(query) {
-  try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-    const data = await res.json();
-    
-    if (data.success && data.data && data.data.length > 0) {
-      showSuggestions(data.data);
-    } else {
-      hideSuggestions();
-    }
-  } catch (e) {
-    console.error('Failed to fetch suggestions:', e);
-    hideSuggestions();
-  }
-}
-
-function showSuggestions(players) {
-  const container = document.getElementById('suggestions');
-  
-  container.innerHTML = players.slice(0, 8).map(player => `
-    <div class="suggestion-item" onclick="selectPlayer('${esc(player.tekkenId || player.tekken_id)}')">
-      <div class="suggestion-avatar">${getInitial(player.username || player.name)}</div>
-      <div class="suggestion-info">
-        <div class="suggestion-name">${esc(player.username || player.name)}</div>
-        <div class="suggestion-meta">
-          <span class="suggestion-rank">${esc(player.currentRank || player.rank || 'Unknown')}</span>
-          <span>${esc(player.region || 'Unknown')}</span>
-          <span>${formatNumber(player.prowess || 0)} prowess</span>
+      <div class="popular-searches">
+        <div class="popular-title">Popular Searches</div>
+        <div class="popular-tags">
+          <div class="popular-tag" onclick="searchPlayer('Arslan Ash')">Arslan Ash</div>
+          <div class="popular-tag" onclick="searchPlayer('KNEE')">KNEE</div>
+          <div class="popular-tag" onclick="searchPlayer('Chikurin')">Chikurin</div>
+          <div class="popular-tag" onclick="searchPlayer('Atif Butt')">Atif Butt</div>
+          <div class="popular-tag" onclick="searchPlayer('Ulsan')">Ulsan</div>
         </div>
       </div>
     </div>
-  `).join('');
-  
-  container.classList.add('show');
-}
+  </div>
+</section>
 
-function hideSuggestions() {
-  document.getElementById('suggestions').classList.remove('show');
-}
-
-function selectPlayer(tekkenId) {
-  addToRecent(tekkenId);
-  window.location.href = `./player.html?id=${encodeURIComponent(tekkenId)}`;
-}
-
-function addToRecent(query) {
-  recentSearches = recentSearches.filter(s => s.query !== query);
-  recentSearches.unshift({ query, time: Date.now() });
-  recentSearches = recentSearches.slice(0, 10);
-  localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
-}
-
-function loadRecentSearches() {
-  if (recentSearches.length === 0) return;
-  
-  const section = document.getElementById('recentSection');
-  const list = document.getElementById('recentList');
-  
-  list.innerHTML = recentSearches.map(search => `
-    <div class="recent-item" onclick="selectPlayer('${esc(search.query)}')">
-      <span class="recent-name">${esc(search.query)}</span>
-      <span class="recent-time">${formatTime(search.time)}</span>
+<!-- Recent / Popular Players -->
+<section class="recent-searches-section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Top Players</h2>
+        <p class="section-subtitle">Explore profiles of the best TEKKEN 8 players</p>
+      </div>
     </div>
-  `).join('');
-  
-  section.style.display = 'block';
-}
 
-function clearRecent() {
-  recentSearches = [];
-  localStorage.removeItem('recentSearches');
-  document.getElementById('recentSection').style.display = 'none';
-}
-
-async function loadPopularPlayers() {
-  try {
-    const res = await fetch('/api/leaderboard?limit=12');
-    const data = await res.json();
-    
-    if (data.success && data.data) {
-      const loading = document.getElementById('popularLoading');
-      const grid = document.getElementById('popularGrid');
-      
-      loading.style.display = 'none';
-      grid.style.display = 'grid';
-      
-      grid.innerHTML = data.data.map(player => `
-        <div class="popular-card" onclick="selectPlayer('${esc(player.tekkenId || player.tekken_id)}')">
-          <div class="popular-avatar">${getInitial(player.username || player.name)}</div>
-          <div class="popular-name">${esc(player.username || player.name)}</div>
-          <div class="popular-rank">${esc(player.currentRank || player.rank || 'Unknown')}</div>
+    <div id="playersContainer" class="players-grid">
+      <!-- Loading skeletons -->
+      <div class="player-card">
+        <div class="player-card-header">
+          <div class="skeleton" style="width: 64px; height: 64px; border-radius: var(--radius-lg);"></div>
+          <div style="flex: 1;">
+            <div class="skeleton" style="width: 60%; height: 24px; margin-bottom: 8px;"></div>
+            <div class="skeleton" style="width: 40%; height: 16px;"></div>
+          </div>
         </div>
-      `).join('');
+        <div class="skeleton" style="width: 100%; height: 60px;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+const EWGF_API = 'https://www.ewgf.gg/api';
+let searchTimeout;
+
+// Search input handler
+const searchInput = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
+
+searchInput.addEventListener('input', (e) => {
+  const query = e.target.value.trim();
+  
+  clearTimeout(searchTimeout);
+  
+  if (query.length < 2) {
+    searchResults.style.display = 'none';
+    return;
+  }
+  
+  searchResults.innerHTML = '<div style="padding: var(--space-lg); text-align: center; color: var(--text-secondary);">Searching...</div>';
+  searchResults.style.display = 'block';
+  
+  searchTimeout = setTimeout(() => performSearch(query), 300);
+});
+
+async function performSearch(query) {
+  try {
+    const response = await fetch(`${EWGF_API}/search?q=${encodeURIComponent(query)}`);
+    const data = await response.json();
+    
+    if (data && data.data && data.data.length > 0) {
+      displaySearchResults(data.data);
+    } else {
+      searchResults.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-title">No players found</div>
+          <div class="empty-description">Try a different search term</div>
+        </div>
+      `;
     }
-  } catch (e) {
-    console.error('Failed to load popular players:', e);
-    document.getElementById('popularLoading').innerHTML = '<p>Failed to load popular players</p>';
+  } catch (error) {
+    console.error('Search error:', error);
+    searchResults.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-title">Search failed</div>
+        <div class="empty-description">Please try again later</div>
+      </div>
+    `;
   }
 }
 
-function esc(str) {
-  if (!str) return '';
-  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function displaySearchResults(players) {
+  searchResults.innerHTML = players.slice(0, 8).map(player => `
+    <div class="search-result-item" onclick="viewPlayer('${player.id || player.polaris_id}')">
+      <div class="search-result-avatar">${getInitial(player.name || player.username)}</div>
+      <div class="search-result-info">
+        <div class="search-result-name">${esc(player.name || player.username || 'Unknown')}</div>
+        <div class="search-result-meta">
+          <span>${esc(player.tekken_name || player.character || 'Unknown')}</span>
+          <span>•</span>
+          <span>${formatNumber(player.power || player.prowess || 0)} Prowess</span>
+        </div>
+      </div>
+      <div class="search-result-badge">
+        ${player.rank || player.dan_rank || 'Unknown Rank'}
+      </div>
+    </div>
+  `).join('');
 }
 
-function getInitial(name) {
-  if (!name) return '?';
-  return String(name).charAt(0).toUpperCase();
+function searchPlayer(name) {
+  searchInput.value = name;
+  performSearch(name);
+}
+
+// Load top players
+async function loadTopPlayers() {
+  try {
+    const response = await fetch(`${EWGF_API}/leaderboard?limit=12`);
+    const data = await response.json();
+    
+    if (data && data.data) {
+      displayPlayerCards(data.data);
+    }
+  } catch (error) {
+    console.error('Failed to load players:', error);
+    document.getElementById('playersContainer').innerHTML = `
+      <div class="empty-state" style="grid-column: 1 / -1;">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-title">Failed to load players</div>
+        <div class="empty-description">Please refresh the page to try again</div>
+      </div>
+    `;
+  }
+}
+
+function displayPlayerCards(players) {
+  const container = document.getElementById('playersContainer');
+  container.innerHTML = players.map(player => {
+    const wins = player.wins || 0;
+    const losses = player.losses || 1;
+    const winRate = Math.round((wins / (wins + losses)) * 100);
+    
+    return `
+      <div class="player-card" onclick="viewPlayer('${player.id || player.polaris_id}')">
+        <div class="player-card-header">
+          <div class="player-card-avatar">${getInitial(player.name || player.username)}</div>
+          <div class="player-card-info">
+            <div class="player-card-name">${esc(player.name || player.username || 'Unknown')}</div>
+            <div class="player-card-rank">${esc(player.rank || player.dan_rank || 'Unknown Rank')}</div>
+          </div>
+        </div>
+        <div class="player-card-stats">
+          <div class="player-card-stat">
+            <div class="player-card-stat-value">${formatNumber(player.power || player.prowess || 0)}</div>
+            <div class="player-card-stat-label">Prowess</div>
+          </div>
+          <div class="player-card-stat">
+            <div class="player-card-stat-value">${winRate}%</div>
+            <div class="player-card-stat-label">Win Rate</div>
+          </div>
+          <div class="player-card-stat">
+            <div class="player-card-stat-value">${wins + losses}</div>
+            <div class="player-card-stat-label">Matches</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function viewPlayer(id) {
+  window.location.href = `./player-v2.html?id=${encodeURIComponent(id)}`;
 }
 
 function formatNumber(num) {
@@ -550,16 +505,26 @@ function formatNumber(num) {
   return num.toString();
 }
 
-function formatTime(timestamp) {
-  const diff = Date.now() - timestamp;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
 }
+
+function getInitial(name) {
+  return name ? name.charAt(0).toUpperCase() : '?';
+}
+
+// Close search results when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-box')) {
+    searchResults.style.display = 'none';
+  }
+});
+
+// Load initial data
+loadTopPlayers();
 </script>
 
 </body>

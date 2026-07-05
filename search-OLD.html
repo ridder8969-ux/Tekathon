@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search Players - Tekathon</title>
+<style>
+  :root {
+    --bg-dark: #0d1117;
+    --bg-darker: #010409;
+    --surface: #161b22;
+    --surface-hover: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #7d8590;
+    --text-dimmer: #6e7681;
+    --accent: #8b5cf6;
+    --accent-light: #a78bfa;
+    --accent-dim: rgba(139, 92, 246, 0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .topbar {
+    background: var(--bg-darker);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+  }
+
+  .topbar-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: white;
+  }
+
+  .brand-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .brand-text .accent { color: var(--accent); }
+
+  .topnav {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .topnav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .topnav a:hover, .topnav a.active {
+    color: var(--text);
+    background: var(--accent-dim);
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 24px;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  .page-header p {
+    color: var(--text-dim);
+    font-size: 1.1rem;
+  }
+
+  .search-box {
+    position: relative;
+    margin-bottom: 48px;
+  }
+
+  .search-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 18px 24px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-dimmer);
+  }
+
+  .suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-top: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    display: none;
+    z-index: 100;
+  }
+
+  .suggestions.show {
+    display: block;
+  }
+
+  .suggestion-item {
+    padding: 16px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .suggestion-item:last-child {
+    border-bottom: none;
+  }
+
+  .suggestion-item:hover {
+    background: var(--surface-hover);
+  }
+
+  .suggestion-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .suggestion-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .suggestion-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+
+  .suggestion-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .suggestion-rank {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  .clear-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 4px 12px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .clear-btn:hover {
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .recent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .recent-item {
+    padding: 12px 16px;
+    background: var(--bg-dark);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .recent-item:hover {
+    background: var(--surface-hover);
+    transform: translateX(4px);
+  }
+
+  .recent-name {
+    font-weight: 500;
+  }
+
+  .recent-time {
+    font-size: 0.85rem;
+    color: var(--text-dimmer);
+  }
+
+  .popular-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .popular-card {
+    background: var(--bg-dark);
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .popular-card:hover {
+    background: var(--surface-hover);
+    transform: translateY(-2px);
+  }
+
+  .popular-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 0 auto 12px;
+  }
+
+  .popular-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .popular-rank {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-dim);
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 768px) {
+    .topnav { display: none; }
+    .popular-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-content">
+    <a href="./index.html" class="brand">
+      <div class="brand-icon">T</div>
+      <div class="brand-text">Teka<span class="accent">thon</span></div>
+    </a>
+    <nav class="topnav">
+      <a href="./index.html">Home</a>
+      <a href="./search.html" class="active">Search</a>
+      <a href="./leaderboard.html">Leaderboards</a>
+      <a href="./analytics.html">Analytics</a>
+      <a href="./dashboard.html">Dashboard</a>
+    </nav>
+  </div>
+</div>
+
+<div class="container">
+  <div class="page-header">
+    <h1>Player Search</h1>
+    <p>Find any TEKKEN 8 player by their ID or username</p>
+  </div>
+
+  <div class="search-box">
+    <input 
+      type="text" 
+      class="search-input" 
+      id="searchInput"
+      placeholder="Enter player name or Tekken ID..."
+      autocomplete="off"
+    >
+    <div class="suggestions" id="suggestions"></div>
+  </div>
+
+  <div class="section" id="recentSection" style="display:none;">
+    <div class="section-header">
+      <h3 class="section-title">Recent Searches</h3>
+      <button class="clear-btn" onclick="clearRecent()">Clear All</button>
+    </div>
+    <div class="recent-list" id="recentList"></div>
+  </div>
+
+  <div class="section">
+    <h3 class="section-title">Popular Players</h3>
+    <div id="popularLoading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading popular players...</p>
+    </div>
+    <div class="popular-grid" id="popularGrid" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+let searchTimeout;
+let recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+
+loadRecentSearches();
+loadPopularPlayers();
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  const query = e.target.value.trim();
+  clearTimeout(searchTimeout);
+  
+  if (query.length < 2) {
+    hideSuggestions();
+    return;
+  }
+  
+  searchTimeout = setTimeout(() => fetchSuggestions(query), 300);
+});
+
+document.getElementById('searchInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    const query = e.target.value.trim();
+    if (query) selectPlayer(query);
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-box')) hideSuggestions();
+});
+
+async function fetchSuggestions(query) {
+  try {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    
+    if (data.success && data.data && data.data.length > 0) {
+      showSuggestions(data.data);
+    } else {
+      hideSuggestions();
+    }
+  } catch (e) {
+    console.error('Failed to fetch suggestions:', e);
+    hideSuggestions();
+  }
+}
+
+function showSuggestions(players) {
+  const container = document.getElementById('suggestions');
+  
+  container.innerHTML = players.slice(0, 8).map(player => `
+    <div class="suggestion-item" onclick="selectPlayer('${esc(player.tekkenId || player.tekken_id)}')">
+      <div class="suggestion-avatar">${getInitial(player.username || player.name)}</div>
+      <div class="suggestion-info">
+        <div class="suggestion-name">${esc(player.username || player.name)}</div>
+        <div class="suggestion-meta">
+          <span class="suggestion-rank">${esc(player.currentRank || player.rank || 'Unknown')}</span>
+          <span>${esc(player.region || 'Unknown')}</span>
+          <span>${formatNumber(player.prowess || 0)} prowess</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  
+  container.classList.add('show');
+}
+
+function hideSuggestions() {
+  document.getElementById('suggestions').classList.remove('show');
+}
+
+function selectPlayer(tekkenId) {
+  addToRecent(tekkenId);
+  window.location.href = `./player.html?id=${encodeURIComponent(tekkenId)}`;
+}
+
+function addToRecent(query) {
+  recentSearches = recentSearches.filter(s => s.query !== query);
+  recentSearches.unshift({ query, time: Date.now() });
+  recentSearches = recentSearches.slice(0, 10);
+  localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+}
+
+function loadRecentSearches() {
+  if (recentSearches.length === 0) return;
+  
+  const section = document.getElementById('recentSection');
+  const list = document.getElementById('recentList');
+  
+  list.innerHTML = recentSearches.map(search => `
+    <div class="recent-item" onclick="selectPlayer('${esc(search.query)}')">
+      <span class="recent-name">${esc(search.query)}</span>
+      <span class="recent-time">${formatTime(search.time)}</span>
+    </div>
+  `).join('');
+  
+  section.style.display = 'block';
+}
+
+function clearRecent() {
+  recentSearches = [];
+  localStorage.removeItem('recentSearches');
+  document.getElementById('recentSection').style.display = 'none';
+}
+
+async function loadPopularPlayers() {
+  try {
+    const res = await fetch('/api/leaderboard?limit=12');
+    const data = await res.json();
+    
+    if (data.success && data.data) {
+      const loading = document.getElementById('popularLoading');
+      const grid = document.getElementById('popularGrid');
+      
+      loading.style.display = 'none';
+      grid.style.display = 'grid';
+      
+      grid.innerHTML = data.data.map(player => `
+        <div class="popular-card" onclick="selectPlayer('${esc(player.tekkenId || player.tekken_id)}')">
+          <div class="popular-avatar">${getInitial(player.username || player.name)}</div>
+          <div class="popular-name">${esc(player.username || player.name)}</div>
+          <div class="popular-rank">${esc(player.currentRank || player.rank || 'Unknown')}</div>
+        </div>
+      `).join('');
+    }
+  } catch (e) {
+    console.error('Failed to load popular players:', e);
+    document.getElementById('popularLoading').innerHTML = '<p>Failed to load popular players</p>';
+  }
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function getInitial(name) {
+  if (!name) return '?';
+  return String(name).charAt(0).toUpperCase();
+}
+
+function formatNumber(num) {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
+}
+
+function formatTime(timestamp) {
+  const diff = Date.now() - timestamp;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
+}
+</script>
+
+</body>
+</html>
