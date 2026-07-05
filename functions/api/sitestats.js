@@ -6,7 +6,7 @@
 //  for players, matches, characters, etc.
 // ============================================================
 
-import { getAnalytics, getAllCharacters } from "../_lib/Tekathon-api.js";
+import { getAnalytics, getAllCharacters } from "../_lib/tektek-api.js";
 
 export async function onRequest(context) {
   const { request, env } = context;

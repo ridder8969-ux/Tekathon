@@ -8,7 +8,7 @@
 //    /api/characters?name=Jin%20Kazama - Get specific character
 // ============================================================
 
-import { getAllCharacters, getCharacterStats } from "../_lib/Tekathon-api.js";
+import { getAllCharacters, getCharacterStats } from "../_lib/tektek-api.js";
 
 export async function onRequest(context) {
   const { request, env } = context;

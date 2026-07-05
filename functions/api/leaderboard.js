@@ -9,7 +9,7 @@
 //    /api/leaderboard?rank=Tekken%20God%20Supreme
 // ============================================================
 
-import { getLeaderboard } from "../_lib/Tekathon-api.js";
+import { getLeaderboard } from "../_lib/tektek-api.js";
 
 export async function onRequest(context) {
   const { request, env } = context;

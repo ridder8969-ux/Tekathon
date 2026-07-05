@@ -7,7 +7,7 @@
 //  Usage: /api/player?id=TEKKEN_ID
 // ============================================================
 
-import { getPlayer, mergePlayerData } from "../_lib/Tekathon-api.js";
+import { getPlayer, mergePlayerData } from "../_lib/tektek-api.js";
 
 export async function onRequest(context) {
   const { request, env } = context;
