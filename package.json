@@ -1,0 +1,9 @@
+{
+  "name": "tekathon",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "pages:deploy": "wrangler pages deploy .",
+    "pages:dev": "wrangler pages dev ."
+  }
+}
